@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>POS + e-Boletas Chile · COMPARTIR · AgendaPro</title>
+<link rel="preconnect" href="https://api.fontshare.com"/>
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@300,400,500,600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy: #1D1D3D;
+    --navy-mid: #7A7DA4;
+    --navy-light: #9DA1CA;
+    --morado: #812DF2;
+    --morado-pale: #EEE2FF;
+    --naranja: #FF7A59;
+    --naranja-light: #FFB390;
+    --gris: #F5F5F5;
+    --gris-mid: #A8A8A8;
+    --white: #FFFFFF;
+    --line: #E4E4EC;
+    --drawer-w: min(420px, 92vw);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Clash Display', system-ui, sans-serif;
+    background: var(--gris);
+    color: var(--navy);
+    min-height: 100vh;
+    line-height: 1.45;
+  }
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--naranja);
+    background: #FFF0EB;
+    padding: 0.35rem 0.7rem;
+    border-radius: 4px;
+    margin-bottom: 0.85rem;
+  }
+  h1 {
+    font-size: clamp(1.55rem, 3vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+  }
+  .lead {
+    font-weight: 300;
+    font-size: 1.05rem;
+    color: var(--navy-mid);
+    max-width: 36rem;
+    margin-bottom: 0.75rem;
+  }
+  .hint {
+    font-size: 0.9rem;
+    color: var(--gris-mid);
+    margin-bottom: 2rem;
+  }
+  .hint strong { color: var(--navy-mid); font-weight: 500; }
+
+  .phase {
+    margin-bottom: 1.75rem;
+  }
+  .phase-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--navy-light);
+    margin-bottom: 0.65rem;
+    padding-left: 0.15rem;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 0.55rem;
+  }
+  .arrow {
+    display: flex;
+    align-items: center;
+    color: var(--navy-light);
+    font-size: 1.1rem;
+    padding: 0 0.1rem;
+    user-select: none;
+  }
+  .node {
+    flex: 1 1 140px;
+    min-width: 130px;
+    max-width: 200px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--morado);
+    border-radius: 8px;
+    padding: 0.85rem 0.95rem;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    font: inherit;
+    color: inherit;
+  }
+  .node:hover, .node:focus-visible {
+    border-color: var(--morado);
+    box-shadow: 0 6px 20px rgba(29, 29, 61, 0.08);
+    transform: translateY(-2px);
+    outline: none;
+  }
+  .node.active {
+    border-color: var(--naranja);
+    border-left-color: var(--naranja);
+    box-shadow: 0 0 0 2px rgba(255, 122, 89, 0.25);
+  }
+  .node.parallel {
+    border-left-color: var(--naranja);
+    max-width: 220px;
+  }
+  .node .num {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--navy-light);
+    margin-bottom: 0.25rem;
+  }
+  .node .title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .node .tap {
+    display: block;
+    margin-top: 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--morado);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .node:hover .tap, .node:focus-visible .tap { opacity: 1; }
+
+  .branch {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin: 0.5rem 0 0.25rem;
+  }
+  @media (min-width: 720px) {
+    .branch {
+      grid-template-columns: 1fr auto 1fr;
+      align-items: start;
+    }
+  }
+  .branch-main .row { justify-content: flex-start; }
+  .branch-side {
+    background: #FFF8F5;
+    border: 1px dashed var(--naranja-light);
+    border-radius: 10px;
+    padding: 0.85rem;
+  }
+  .branch-side .phase-label { color: var(--naranja); }
+  .branch-note {
+    font-size: 0.78rem;
+    color: var(--navy-mid);
+    font-weight: 300;
+    margin-top: 0.5rem;
+  }
+  .join {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--navy-light);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.5rem;
+  }
+
+  .footer-link {
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: var(--navy-mid);
+  }
+  .footer-link a {
+    color: var(--morado);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .footer-link a:hover { text-decoration: underline; }
+
+  /* Drawer */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(29, 29, 61, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 40;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: var(--drawer-w);
+    height: 100%;
+    background: var(--white);
+    box-shadow: -12px 0 40px rgba(29, 29, 61, 0.12);
+    transform: translateX(105%);
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-head {
+    padding: 1.35rem 1.35rem 1rem;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .drawer-phase {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--naranja);
+    margin-bottom: 0.35rem;
+  }
+  .drawer-head h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    padding-right: 2rem;
+  }
+  .drawer-close {
+    position: absolute;
+    top: 1.1rem;
+    right: 1.1rem;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--gris);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.25rem;
+    color: var(--navy);
+    line-height: 1;
+  }
+  .drawer-close:hover { background: var(--morado-pale); }
+  .drawer-body {
+    padding: 1.25rem 1.35rem;
+    overflow-y: auto;
+    flex: 1;
+    font-weight: 300;
+    font-size: 0.95rem;
+  }
+  .drawer-body ul {
+    margin: 0.75rem 0 1rem;
+    padding-left: 1.1rem;
+  }
+  .drawer-body li { margin-bottom: 0.4rem; }
+  .drawer-body strong { font-weight: 500; }
+  .stop {
+    background: #FFF0EB;
+    border-left: 3px solid var(--naranja);
+    padding: 0.7rem 0.85rem;
+    border-radius: 0 6px 6px 0;
+    font-size: 0.88rem;
+    margin: 1rem 0;
+  }
+  .drawer-actions {
+    padding: 1rem 1.35rem 1.5rem;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    flex-shrink: 0;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 500;
+    font-size: 0.92rem;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-primary {
+    background: var(--morado);
+    color: var(--white);
+  }
+  .btn-primary:hover { background: #6B22D4; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--navy-mid);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover { background: var(--gris); color: var(--navy); }
+  .click-pulse {
+    animation: pulse 2.2s ease-in-out 2;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: none; }
+    50% { box-shadow: 0 0 0 4px rgba(129, 45, 242, 0.18); }
+  }
+
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:880px;margin:0 auto;padding:2rem 1.25rem 4rem;line-height:1.55;color:#1d1d1f;background:#fff}
+h1{font-size:1.75rem;color:#6a1b9a;margin-top:0}
+h2{font-size:1.35rem;color:#6a1b9a;border-bottom:2px solid #e1bee7;padding-bottom:.35rem;margin-top:2.2rem}
+h3{font-size:1.1rem;color:#4527a0;margin-top:1.4rem}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem}
+th,td{border:1px solid #ddd;padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:#f3e5f5}
+blockquote{border-left:4px solid #ce93d8;margin:1rem 0;padding:.6rem 1rem;background:#faf5ff}
+ul,ol{padding-left:1.3rem}
+.check{margin:.25rem 0 .25rem .2rem}
+code{background:#f5f5f7;padding:.1rem .35rem;border-radius:4px;font-size:.9em}
+hr{border:none;border-top:1px solid #e0e0e0;margin:2rem 0}
+a{color:#6a1b9a}
+@media print{body{max-width:100%;padding:1rem}}
+
+
+  /* === COMPARTIR: switcher + matriz embebida === */
+  .view-switch {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .view-switch button {
+    font: inherit;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--white);
+    color: var(--navy-mid);
+    cursor: pointer;
+  }
+  .view-switch button.active {
+    background: var(--morado);
+    border-color: var(--morado);
+    color: var(--white);
+  }
+  .view-switch button:hover:not(.active) {
+    background: var(--morado-pale);
+    color: var(--navy);
+  }
+  #view-matriz {
+    display: none;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 1rem 1.25rem 4rem;
+    background: var(--white);
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-weight: 400;
+    line-height: 1.55;
+  }
+  #view-matriz.visible { display: block; }
+  #view-flujo.hidden { display: none; }
+  #view-matriz h1, #view-matriz h2, #view-matriz h3 {
+    font-family: 'Clash Display', system-ui, sans-serif;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  #view-matriz a { color: var(--morado); }
+  #view-matriz table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.75rem 0 1.25rem;
+    font-size: 0.92rem;
+  }
+  #view-matriz th, #view-matriz td {
+    border: 1px solid var(--line);
+    padding: 0.45rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  #view-matriz th { background: var(--morado-pale); }
+  #view-matriz .back-flujo {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: rgba(255,255,255,0.95);
+    padding: 0.75rem 0;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  #view-matriz .back-flujo button {
+    font: inherit;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.55rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: var(--morado);
+    color: var(--white);
+    cursor: pointer;
+  }
+
+  /* === Buscador de temas === */
+  .topbar-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1 1 260px;
+    min-width: 220px;
+  }
+  .search-ic {
+    position: absolute;
+    left: 0.7rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.95rem;
+    color: var(--navy-light);
+    pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    font: inherit;
+    font-size: 0.92rem;
+    padding: 0.6rem 0.8rem 0.6rem 2.15rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--navy);
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: var(--morado);
+    box-shadow: 0 0 0 2px rgba(129, 45, 242, 0.15);
+  }
+  .search-results {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 8px 28px rgba(29, 29, 61, 0.14);
+    max-height: 340px;
+    overflow-y: auto;
+    z-index: 60;
+    display: none;
+  }
+  .search-results.open { display: block; }
+  .search-results li { list-style: none; }
+  .search-results button {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 0.55rem 0.8rem;
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--navy);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .search-results li:last-child button { border-bottom: none; }
+  .search-results button:hover,
+  .search-results button.hl { background: var(--morado-pale); }
+  .search-results .r-part {
+    font-size: 0.68rem;
+    color: var(--navy-light);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .search-results .r-empty {
+    padding: 0.7rem 0.8rem;
+    color: var(--gris-mid);
+    font-size: 0.88rem;
+  }
+  .anchor-flash { animation: flash 2.2s ease-out 1; }
+  @keyframes flash {
+    0% { background: #FFF0EB; box-shadow: -8px 0 0 4px #FFF0EB, 8px 0 0 4px #FFF0EB; }
+    100% { background: transparent; box-shadow: none; }
+  }
+
+
+  /* === Acceso interno AgendaPro === */
+  #ap-gate {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, #1D1D3D 0%, #3a2a6a 50%, #812DF2 100%);
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  #ap-gate[hidden] { display: none !important; }
+  #ap-gate .box {
+    background: #fff; color: #1D1D3D;
+    width: min(380px, 92vw);
+    padding: 1.75rem 1.5rem 1.5rem;
+    border-radius: 14px;
+    box-shadow: 0 20px 50px rgba(0,0,0,.25);
+  }
+  #ap-gate .eyebrow {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #812DF2; margin-bottom: 0.5rem;
+  }
+  #ap-gate h1 { font-size: 1.2rem; margin: 0 0 0.4rem; font-weight: 650; }
+  #ap-gate p { font-size: 0.9rem; color: #6b6b80; margin: 0 0 1rem; line-height: 1.45; }
+  #ap-gate input {
+    width: 100%; box-sizing: border-box;
+    padding: 0.7rem 0.85rem; border: 1px solid #E4E4EC; border-radius: 8px;
+    font: inherit; font-size: 0.95rem; margin-bottom: 0.65rem;
+  }
+  #ap-gate input:focus { outline: none; border-color: #812DF2; box-shadow: 0 0 0 2px rgba(129,45,242,.18); }
+  #ap-gate button {
+    width: 100%; padding: 0.75rem; border: none; border-radius: 8px;
+    background: #812DF2; color: #fff; font: inherit; font-weight: 600;
+    font-size: 0.95rem; cursor: pointer;
+  }
+  #ap-gate button:hover { background: #6B22D4; }
+  #ap-gate .err { color: #c62828; font-size: 0.85rem; min-height: 1.2em; margin: 0.35rem 0 0.5rem; }
+  body.ap-locked > *:not(#ap-gate) { visibility: hidden !important; }
+
+</style>
+</head>
+<body class="ap-locked">
+
+<div id="ap-gate" role="dialog" aria-modal="true" aria-labelledby="ap-gate-title">
+  <div class="box">
+    <div class="eyebrow">AgendaPro · interno</div>
+    <h1 id="ap-gate-title">POS + e-Boletas Chile</h1>
+    <p>Guía interactiva CX. Solo personal AgendaPro. Ingresá la clave compartida por el equipo.</p>
+    <form id="ap-gate-form" autocomplete="off">
+      <input id="ap-gate-input" type="password" placeholder="Clave de acceso" aria-label="Clave de acceso" autofocus />
+      <div class="err" id="ap-gate-err" aria-live="polite"></div>
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
+</div>
+
+  <div class="page" id="top-switch" style="padding-bottom:0;margin-bottom:0;">
+    <span class="badge">Borrador · Propay · v2.3 · 1 solo archivo</span>
+    <div class="topbar-tools">
+      <div class="view-switch" role="tablist" aria-label="Vista">
+        <button type="button" class="active" data-view="flujo" id="tab-flujo">Flujo interactivo</button>
+        <button type="button" data-view="matriz" id="tab-matriz">Procedimiento completo</button>
+      </div>
+      <div class="search-wrap">
+        <span class="search-ic" aria-hidden="true">🔎</span>
+        <input id="topic-search" class="search-input" type="search" autocomplete="off"
+               placeholder="Buscar tema… (ej. Split, credenciales, POS, paso 8)" aria-label="Buscar tema" />
+        <ul class="search-results" id="search-results" role="listbox" aria-label="Resultados"></ul>
+      </div>
+    </div>
+  </div>
+  <div id="view-flujo">
+
+  <div class="page">
+    <span class="badge">Borrador · Propay · v2.3 · archivo único</span>
+    <h1>Flujo 0 → configurado</h1>
+    <p class="lead">POS + e-Boletas Chile · Solo Tready / SII. Haz clic en una etapa para ver el detalle y abrir el procedimiento matriz.</p>
+    <p class="hint"><strong>Tip:</strong> un solo archivo. El panel resume la etapa; “Abrir procedimiento completo” salta a esa sección aquí mismo.</p>
+
+    <!-- PARTE A -->
+    <section class="phase" aria-label="Parte A">
+      <div class="phase-label">Parte A — Antes del cliente</div>
+      <div class="row">
+        <button type="button" class="node click-pulse" data-id="p0" aria-haspopup="dialog">
+          <span class="num">Paso 0</span>
+          <span class="title">Recibir el caso</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+        <span class="arrow" aria-hidden="true">→</span>
+        <button type="button" class="node" data-id="p1">
+          <span class="num">Paso 1</span>
+          <span class="title">Coordinar reunión</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- PARTE B -->
+    <section class="phase" aria-label="Parte B">
+      <div class="phase-label">Parte B — Reunión de planificación</div>
+      <div class="row">
+        <button type="button" class="node" data-id="p2">
+          <span class="num">Paso 2</span>
+          <span class="title">Abrir la reunión</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+        <span class="arrow" aria-hidden="true">→</span>
+        <button type="button" class="node" data-id="p3" style="flex: 1.4; max-width: 280px;">
+          <span class="num">Paso 3</span>
+          <span class="title">Diagnóstico (guion)</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- PARTE C -->
+    <section class="phase" aria-label="Parte C">
+      <div class="phase-label">Parte C — Configurar</div>
+      <div class="row">
+        <button type="button" class="node" data-id="p4">
+          <span class="num">Paso 4</span>
+          <span class="title">Autorización SII</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+        <span class="arrow" aria-hidden="true">→</span>
+        <button type="button" class="node" data-id="p5">
+          <span class="num">Paso 5</span>
+          <span class="title">Sanidad SaaS</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+        <span class="arrow" aria-hidden="true">→</span>
+        <button type="button" class="node" data-id="p6">
+          <span class="num">Paso 6</span>
+          <span class="title">Flag 166</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+      </div>
+      <div class="row" style="margin-top: 0.55rem;">
+        <button type="button" class="node" data-id="p7">
+          <span class="num">Paso 7</span>
+          <span class="title">Credenciales SII</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+        <span class="arrow" aria-hidden="true">→</span>
+        <button type="button" class="node" data-id="p8" style="flex: 1.3; max-width: 260px;">
+          <span class="num">Paso 8</span>
+          <span class="title">Reglas Tready</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+      </div>
+
+      <div class="branch">
+        <div class="branch-main"></div>
+        <div class="join" aria-hidden="true">∥</div>
+        <div class="branch-side">
+          <div class="phase-label">Paralelo · POS</div>
+          <button type="button" class="node parallel" data-id="p9" style="max-width: none; width: 100%;">
+            <span class="num">Paso 9</span>
+            <span class="title">POS (máquina)</span>
+            <span class="tap">Ver detalle →</span>
+          </button>
+          <p class="branch-note">No frenes el despacho por boletas. Solo POS → salta 4–8.</p>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 0.75rem;">
+        <button type="button" class="node" data-id="p10">
+          <span class="num">Paso 10</span>
+          <span class="title">Capacitación</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+        <span class="arrow" aria-hidden="true">→</span>
+        <button type="button" class="node" data-id="p11">
+          <span class="num">Paso 11</span>
+          <span class="title">Prueba cobro + boleta</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+        <span class="arrow" aria-hidden="true">→</span>
+        <button type="button" class="node" data-id="p12">
+          <span class="num">Paso 12</span>
+          <span class="title">Cierre</span>
+          <span class="tap">Ver detalle →</span>
+        </button>
+      </div>
+    </section>
+
+    <p class="footer-link">
+      Documento matriz:
+      <a href="Procedimiento-POS-eBoletas-CX-Chile.html" target="_blank" rel="noopener">Procedimiento-POS-eBoletas-CX-Chile.html</a>
+      · <a href="Procedimiento-POS-eBoletas-CX-Chile.html#apéndice-a-dtemite-facturador-de-mercado-partner-en-preparación" target="_blank" rel="noopener">Apéndice A · DTEmite (en preparación)</a>
+    </p>
+    <p class="footer-link" style="border-top: none; margin-top: 0.5rem; padding-top: 0;">
+      Si el cliente requiere <strong>DTEmite</strong> (más frecuente en <strong>Salud</strong>, o si no puede dejar su facturador de mercado actual — <strong>pueden coexistir</strong>), no uses este flujo e-Boletas: proceso paralelo — ver Apéndice A.
+    </p>
+  </div>
+
+  </div><!-- /view-flujo -->
+<div class="overlay" id="overlay" hidden></div>
+  <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden>
+    <div class="drawer-head">
+      <button type="button" class="drawer-close" id="drawer-close" aria-label="Cerrar">×</button>
+      <div class="drawer-phase" id="drawer-phase"></div>
+      <h2 id="drawer-title"></h2>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+    <div class="drawer-actions">
+      <a class="btn btn-primary" id="btn-full" href="#" target="_blank" rel="noopener">
+        Abrir procedimiento completo ↗
+      </a>
+      <button type="button" class="btn btn-ghost" id="btn-close">Cerrar</button>
+    </div>
+  </aside>
+
+<script>
+(function () {
+  const DOC = 'Procedimiento-POS-eBoletas-CX-Chile.html';
+  const STEPS = {
+    p0: {
+      phase: 'Parte A',
+      title: 'Paso 0 · Recibir el caso',
+      anchor: 'paso-0-recibir-el-caso-sin-cliente-aún',
+      html: `
+        <ul>
+          <li>Journey <strong>Implementación POS y F.E. Chile</strong> en CM.</li>
+          <li>Formulario POS y Boletas completo; si falta → hold a KAM.</li>
+          <li>Higiene de handoff Chile / Propay.</li>
+          <li>Anotar company_id, contactos, qué se vendió.</li>
+        </ul>`
+    },
+    p1: {
+      phase: 'Parte A',
+      title: 'Paso 1 · Coordinar reunión',
+      anchor: 'paso-1-coordinar-la-reunión-de-planificación',
+      html: `
+        <ul>
+          <li>Dueño <strong>y</strong> quien opera caja.</li>
+          <li>45–60 min si POS + boletas.</li>
+          <li>Que el cliente <strong>entienda qué es cada cosa y para qué</strong> (RUT, comisiones, autorización Pablo / e-Boletas). <strong>No pedimos claves SII.</strong></li>
+        </ul>`
+    },
+    p2: {
+      phase: 'Parte B',
+      title: 'Paso 2 · Abrir la reunión',
+      anchor: 'paso-2-abrir-la-reunión-23-min',
+      html: `
+        <ul>
+          <li>POS solo cobra; <strong>AgendaPro emite</strong> las boletas.</li>
+          <li>No es asesoría contable → contador.</li>
+          <li>Primero cobranza; boletas en paralelo o después.</li>
+        </ul>`
+    },
+    p3: {
+      phase: 'Parte B',
+      title: 'Paso 3 · Diagnóstico completo',
+      anchor: 'paso-3-guion-de-preguntas-diagnóstico-completo',
+      html: `
+        <ul>
+          <li>Bloques A–F: qué compró, cómo emite hoy, Split/comisiones, productos, POS.</li>
+          <li><strong>Stop:</strong> voucher = boleta + emisión AP → doble tributación.</li>
+          <li>Productos + Split = <strong>dos reglas</strong>.</li>
+          <li>Anotar en ficha Basecamp; tareas WA al cliente.</li>
+        </ul>
+        <div class="stop">Sin e-Boletas viable → no configures FE aquí; escala KAM.</div>`
+    },
+    p4: {
+      phase: 'Parte C',
+      title: 'Paso 4 · Autorización SII / e-Boletas',
+      anchor: 'paso-4-autorización-sii-e-boletas-con-el-cliente-en-pantalla-o-async',
+      html: `
+        <ul>
+          <li>e-Boletas <strong>habilitado</strong> (no basta usuario autorizado).</li>
+          <li>Comercio: <strong>Pablo Marambio 15.776.844-1</strong>, todos los permisos excepto admin.</li>
+          <li>Split: profesionales autorizan Gunei <strong>76.233.336-8</strong>.</li>
+        </ul>
+        <div class="stop">Sin emisor + e-Boletas activo → no emisión en producción.</div>`
+    },
+    p5: {
+      phase: 'Parte C',
+      title: 'Paso 5 · Sanidad de la cuenta SaaS',
+      anchor: 'paso-5-sanidad-de-la-cuenta-saas',
+      html: `
+        <ul>
+          <li>Locales, servicios, precios, métodos de pago.</li>
+          <li>Comisiones en <strong>%</strong> si habrá Split.</li>
+          <li>Servicios nuevos quedan en 0% → editarlos.</li>
+        </ul>`
+    },
+    p6: {
+      phase: 'Parte C',
+      title: 'Paso 6 · Feature Flag 166',
+      anchor: 'paso-6-back-office-feature-flag-166-módulo-facturación',
+      html: `
+        <ul>
+          <li>BO → Feature Flags → ID <strong>166</strong>.</li>
+          <li>Agregar company_id con coma (sin espacios).</li>
+          <li>Debe aparecer Administración → Facturación.</li>
+        </ul>`
+    },
+    p7: {
+      phase: 'Parte C',
+      title: 'Paso 7 · Credenciales SII',
+      anchor: 'paso-7-solicitar-credenciales-sii-mail-request-credentials',
+      html: `
+        <ul>
+          <li>Cualquier provider de la company → <strong>Edit</strong>.</li>
+          <li>Params (Tree) → cuadrado → <strong>Append</strong> → <code>email</code> = carla@agendapro.com.</li>
+          <li><strong>Request credentials</strong> → avisar a Carla / Aucan (Pablo).</li>
+        </ul>
+        <div class="stop">Sin Credentials → eboleta → no Automatic Issuing.</div>`
+    },
+    p8: {
+      phase: 'Parte C',
+      title: 'Paso 8 · Reglas Tready',
+      anchor: 'paso-8-back-office-reglas-tready-clonar',
+      html: `
+        <ul>
+          <li><strong>Clonar</strong>, no crear desde cero.</li>
+          <li>Split ej. 355689 · Sillón 378086 · Productos+Split = 2 reglas.</li>
+          <li>Automatic Issuing = No al inicio.</li>
+          <li>Columna <code>rut</code> si hay BHE (no dejar vacía).</li>
+        </ul>`
+    },
+    p9: {
+      phase: 'Paralelo · POS',
+      title: 'Paso 9 · POS (máquina)',
+      anchor: 'paso-9-pos-si-el-caso-incluye-máquina',
+      html: `
+        <ul>
+          <li>Merchant code → config → despacho.</li>
+          <li>WiFi del local > SIM · clave típica 123456.</li>
+          <li>No frenes el envío por las boletas.</li>
+        </ul>`
+    },
+    p10: {
+      phase: 'Parte C',
+      title: 'Paso 10 · Capacitación',
+      anchor: 'paso-10-capacitación-con-el-cliente-pos-boletas',
+      html: `
+        <ul>
+          <li>Carrito completo antes de cobrar.</li>
+          <li>Cobrar desde AgendaPro (no solo pago rápido).</li>
+          <li>Meta ~70% tarjetas por POS AgendaPro.</li>
+        </ul>`
+    },
+    p11: {
+      phase: 'Parte C',
+      title: 'Paso 11 · Prueba cobro + boleta',
+      anchor: 'paso-11-prueba-de-cobro-boleta-hasta-que-esté-todo-ok',
+      html: `
+        <ul>
+          <li>Venta de prueba → boleta en <strong>borrador</strong>.</li>
+          <li>Validar tipos, montos, RUTs.</li>
+          <li>Solo entonces Automatic Issuing = Yes + venta chica real.</li>
+        </ul>`
+    },
+    p12: {
+      phase: 'Parte C',
+      title: 'Paso 12 · Cierre',
+      anchor: 'paso-12-cierre-del-caso',
+      html: `
+        <ul>
+          <li>Journey 1–8 (los que apliquen).</li>
+          <li>IDs de reglas, flag 166, credenciales OK.</li>
+          <li>Canal de soporte + monitoreo POS si aplica.</li>
+        </ul>`
+    }
+  };
+
+  const drawer = document.getElementById('drawer');
+  const overlay = document.getElementById('overlay');
+  const phaseEl = document.getElementById('drawer-phase');
+  const titleEl = document.getElementById('drawer-title');
+  const bodyEl = document.getElementById('drawer-body');
+  const btnFull = document.getElementById('btn-full');
+  let lastFocus = null;
+
+  function openStep(id) {
+    const s = STEPS[id];
+    if (!s) return;
+    lastFocus = document.activeElement;
+    phaseEl.textContent = s.phase;
+    titleEl.textContent = s.title;
+    bodyEl.innerHTML = s.html;
+    btnFull.href = DOC + '#' + s.anchor;
+    document.querySelectorAll('.node').forEach(n => n.classList.toggle('active', n.dataset.id === id));
+    drawer.hidden = false;
+    overlay.hidden = false;
+    requestAnimationFrame(() => {
+      drawer.classList.add('open');
+      overlay.classList.add('open');
+    });
+    document.getElementById('drawer-close').focus();
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    overlay.classList.remove('open');
+    document.querySelectorAll('.node.active').forEach(n => n.classList.remove('active'));
+    setTimeout(() => {
+      drawer.hidden = true;
+      overlay.hidden = true;
+      if (lastFocus) lastFocus.focus();
+    }, 220);
+  }
+
+  document.querySelectorAll('.node').forEach(btn => {
+    btn.addEventListener('click', () => openStep(btn.dataset.id));
+  });
+  document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+  document.getElementById('btn-close').addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && drawer.classList.contains('open')) closeDrawer();
+  });
+})();
+</script>
+
+<div id="view-matriz">
+  <div class="back-flujo">
+    <button type="button" id="btn-back-flujo">← Volver al flujo</button>
+  </div>
+  <h1>Procedimiento 0 → configurado — POS + e-Boletas Chile</h1>
+<p><strong>Guía paso a paso para equipos CX · Chile</strong> e-Boletas / Tready (SII) · Journey: Implementación POS y F.E. Chile · v2.3 · julio 2026 · DTEmite → Apéndice A</p><p>Principio operativo: primero cobrar (POS), después fiscalizar (boletas). Puede haber más de una regla Tready en la misma cuenta (ej. productos = boleta empresa 100%; servicios = Split).</p>
+<hr/>
+<h2>Tabla de contenidos</h2><ol><li><a href="#parte-a-antes-de-hablar-con-el-cliente">PARTE A — Antes de hablar con el cliente</a></li><li><a href="#paso-0-recibir-el-caso-sin-cliente-aún">Paso 0. Recibir el caso (sin cliente aún)</a></li><li><a href="#paso-1-coordinar-la-reunión-de-planificación">Paso 1. Coordinar la reunión de planificación</a></li><li><a href="#parte-b-reunión-de-planificación-con-el-cliente">PARTE B — Reunión de planificación con el cliente</a></li><li><a href="#paso-2-abrir-la-reunión-23-min">Paso 2. Abrir la reunión (2–3 min)</a></li><li><a href="#paso-3-guion-de-preguntas-diagnóstico-completo">Paso 3. Guion de preguntas (diagnóstico completo)</a></li><li><a href="#parte-c-configurar-después-de-la-reunión">PARTE C — Configurar (después de la reunión)</a></li><li><a href="#paso-4-autorización-sii-e-boletas-con-el-cliente-en-pantalla-o-async">Paso 4. Autorización SII / e-Boletas (con el cliente en pantalla o async)</a></li><li><a href="#paso-5-sanidad-de-la-cuenta-saas">Paso 5. Sanidad de la cuenta SaaS</a></li><li><a href="#paso-6-back-office-feature-flag-166-módulo-facturación">Paso 6. Back Office — Feature Flag 166 (módulo Facturación)</a></li><li><a href="#paso-7-solicitar-credenciales-sii-mail-request-credentials">Paso 7. Solicitar credenciales SII (mail Request credentials)</a></li><li><a href="#paso-8-back-office-reglas-tready-clonar">Paso 8. Back Office — Reglas Tready (clonar)</a></li><li><a href="#paso-9-pos-si-el-caso-incluye-máquina">Paso 9. POS (si el caso incluye máquina)</a></li><li><a href="#paso-10-capacitación-con-el-cliente-pos-boletas">Paso 10. Capacitación con el cliente (POS + boletas)</a></li><li><a href="#paso-11-prueba-de-cobro-boleta-hasta-que-esté-todo-ok">Paso 11. Prueba de cobro + boleta (hasta que esté todo OK)</a></li><li><a href="#paso-12-cierre-del-caso">Paso 12. Cierre del caso</a></li><li><a href="#parte-d-hojas-rápidas">PARTE D — Hojas rápidas</a></li><li><a href="#journey-cm-las-8-tareas">Journey CM — las 8 tareas</a></li><li><a href="#si-en-la-reunión-descubriste-que-no-puedes-usar-e-boletas">Si en la reunión descubriste que NO puedes usar e-Boletas</a></li><li><a href="#regularizar-ventas-ya-cobradas-sin-boleta-marcha-blanca">Regularizar ventas ya cobradas sin boleta (marcha blanca)</a></li><li><a href="#fuentes-para-profundizar">Fuentes (para profundizar)</a></li><li><a href="#apéndice-a-dtemite-facturador-de-mercado-partner-en-preparación">Apéndice A — DTEmite (facturador de mercado partner) · EN PREPARACIÓN</a></li></ol>
+<hr/>
+<h2 id="parte-a-antes-de-hablar-con-el-cliente">PARTE A — Antes de hablar con el cliente</h2><h2 id="paso-0-recibir-el-caso-sin-cliente-aún">Paso 0. Recibir el caso (sin cliente aún)</h2><ol><li>Abre la cuenta en Company Management.  </li><li>Verifica que exista el journey <strong>Implementación POS y F.E. Chile</strong>.  </li><li>Revisa el <strong>formulario POS y Boletas</strong> (debe estar completo). Si falta → <strong>hold</strong> y devuelve a KAM. No completes el form tú.  </li><li><strong>Higiene de handoff:</strong> confirma que el caso entró como Propay Chile (POS y/o boletas). Si lo tomó un EJ de otro país o solo SaaS sin flag de boletas → corrige con KAM/ops antes de avanzar (evita capacitaciones cruzadas y desorientación del cliente).  </li><li>Anota: <code>company_id</code>, nombre comercio, contacto dueño + quien opera caja, teléfono/WA/Chatwoot, qué se vendió (solo POS / POS+boletas / solo boletas / Split), si ya tienen máquina propia (Getnet/tú/etc.) + la de AgendaPro.  </li><li>Abre el chat del caso (Chatwoot / WhatsApp del canal CX correspondiente).  </li><li>Si el form está OK → marca journey <strong>1 · Completar formularios POS y Boletas</strong>.</li></ol><p><strong>Checklist Paso 0</strong></p><div class="check">☐ Form completo  </div><div class="check">☐ Journey abierto  </div><div class="check">☐ Handoff Chile / Propay correcto  </div><div class="check">☐ Contacto dueño + operador de caja claros  </div><div class="check">☐ Journey tarea 1 marcada  </div><hr/><h2 id="paso-1-coordinar-la-reunión-de-planificación">Paso 1. Coordinar la reunión de planificación</h2><ol><li>Agenda reunión con dueño <strong>y</strong> quien opera caja.  </li><li>Duración sugerida: <strong>45–60 min</strong> si el caso es POS + boletas (casos “complejos”); 30 min si es solo diagnóstico corto.  </li><li>Envía invitación y <strong>asegúrate de que el cliente entienda qué es cada cosa y para qué la necesitamos</strong> (no pedimos claves SII; no es obligatorio que traigan documentos a la reunión):</li></ol><ul><li><strong>Lista de profesionales + RUT + inicio de actividades / BHE</strong> — para saber quién puede emitir honorarios y cómo armar Split o excepciones.  </li><li><strong>Cómo pagan comisiones hoy (% o $ fijo)</strong> — define si se puede configurar Split (hace falta %).  </li><li><strong>Autorización a Pablo Marambio (RUT 15.776.844-1)</strong> con todos los permisos de usuario <strong>excepto administrador</strong> — qué implica habilitar e-Boletas y autorizar al emisor AgendaPro (ellos lo hacen en su SII; <strong>nosotros no pedimos ni recibimos su clave</strong>).  </li></ul><ol><li>Cuando la reunión está agendada (o hecha) → marca journey <strong>2 · Coordinar reunión de planificación</strong>.</li></ol><p><strong>Checklist Paso 1</strong></p><div class="check">☐ Meet agendado (dueño + operador de caja)  </div><div class="check">☐ Cliente entiende qué pedimos y para qué (RUT, comisiones, autorización Pablo / e-Boletas) — <strong>sin pedir clave SII</strong>  </div><div class="check">☐ Journey tarea 2 marcada  </div><hr/><h2 id="parte-b-reunión-de-planificación-con-el-cliente">PARTE B — Reunión de planificación con el cliente</h2><p>Usa esta parte <strong>en vivo</strong>, en orden. Anota las respuestas en la <strong>ficha de Basecamp</strong>.</p><h2 id="paso-2-abrir-la-reunión-23-min">Paso 2. Abrir la reunión (2–3 min)</h2><p><strong>Di exactamente (o parafrasea):</strong></p><blockquote>“Hola, soy [nombre] de AgendaPro / pagos. Hoy vamos a dejar claro cómo cobran y cómo emiten boletas, para configurar bien el POS y la emisión integrada. Importante: <strong>el POS solo cobra</strong>; <strong>AgendaPro emite las boletas</strong> (DTE al correo del cliente). Tener presente que no es asesoría contable: si hay duda tributaria, la ve su contador.”</blockquote><p>Explica en una frase:</p><ul><li>Vamos a preguntar <strong>cómo funciona hoy</strong> (AgendaPro + recaudación + boletas).  </li><li>Según eso vemos si podemos integrar con <strong>e-Boletas</strong> (no es lo mismo que DTEmite / facturador de mercado).  </li><li>Si hay máquina POS, primero la hacemos cobrar; las boletas se configuran en paralelo o después.  </li><li>Si hay oyentes del equipo en la call: avisa al cliente (caso de aprendizaje, permiso breve).</li></ul><hr/><h2 id="paso-3-guion-de-preguntas-diagnóstico-completo">Paso 3. Guion de preguntas (diagnóstico completo)</h2><p>Ve pregunta por pregunta. No saltes. Marca la respuesta.</p><h3>Bloque A — Qué compró / qué espera</h3><table>
+<tr><th>#</th><th>Pregunta</th><th>Anotar</th></tr>
+<tr><td>A1</td><td>“¿Qué contrataron con el ejecutivo: <strong>solo POS</strong>, <strong>POS + boletas</strong>, <strong>solo boletas</strong>, o <strong>Split</strong> (boleta comercio + honorarios del profesional)?”</td><td>Tipo A / B / C / Split</td></tr>
+<tr><td>A2</td><td>“¿Les dijeron que la máquina iba a emitir la boleta?”</td><td>Si sí → corregir expectativa</td></tr>
+<tr><td>A3</td><td>“¿Quién va a operar el día a día: dueño, recepción, contador?”</td><td>Nombre + contacto</td></tr>
+<tr><td>A4</td><td>“¿Qué esperan exactamente que haga AgendaPro con las boletas?” (ej. división 50/50 por comisiones)</td><td>Frase del cliente</td></tr>
+</table>
+<p><strong>Si venden (o van a vender) productos Y usan Split en servicios (sí se puede):</strong>  </p><blockquote>“Perfecto: <strong>no hay que elegir uno</strong>. Creamos <strong>dos reglas</strong>: una para <strong>productos</strong> (100% boleta empresa al RUT del salón) y otra <strong>Split</strong> para <strong>servicios</strong> (boleta comercio + honorarios del profesional). Aunque hoy no vendan productos, si está contemplado lo dejamos previsto.”</blockquote><hr/><h3>Bloque B — Cómo emiten boletas HOY (el más importante)</h3><p><strong>Pregunta madre (obligatoria):</strong></p><blockquote>“¿Cómo emite sus boletas hoy cuando un cliente paga?”</blockquote><p>Marca <strong>una</strong> (o combina si es confuso y aclara):</p><table>
+<tr><th>Opción</th><th>Lo que dice el cliente (ejemplos)</th><th>Qué implica</th></tr>
+<tr><td><strong>B1</strong></td><td>“Las saco en <strong>e-Boletas</strong> del SII / a mano en el SII”</td><td>Camino feliz e-Boletas</td></tr>
+<tr><td><strong>B2</strong></td><td>“Las emite mi <strong>facturador</strong>” (BSale, Nubox, otro)</td><td><strong>Fuera de este procedimiento</strong> → pedir migrar a e-Boletas; si <strong>no puede dejarlo</strong> → <strong>DTEmite</strong> (pueden <strong>coexistir</strong>) · Apéndice A</td></tr>
+<tr><td><strong>B3</strong></td><td>“Me las emite el <strong>POS</strong> / Mercado Pago / la maquinola”</td><td>Revisar: suele ser facturador de mercado → <strong>no e-Boletas</strong> hasta migrar</td></tr>
+<tr><td><strong>B4</strong></td><td>“<strong>No emito</strong>; el <strong>voucher</strong> de Transbank me sirve como boleta”</td><td><strong>No integrar</strong> emisión automática; POS igual se puede activar</td></tr>
+<tr><td><strong>B5</strong></td><td>“No sé / lo hace el contador”</td><td>Pedir hablar con contador o que revise el SII juntos</td></tr>
+</table>
+<p><strong>Preguntas de seguimiento (según respuesta):</strong></p><table>
+<tr><th>Si respondió…</th><th>Pregunta siguiente</th></tr>
+<tr><td>B1 e-Boletas</td><td>“¿Ya tiene e-Boletas activo? ¿Puede entrar ahora y autorizar un emisor?”</td></tr>
+<tr><td>B2 / B3 facturador</td><td>“¿Cuál es el nombre del sistema? ¿Puede darlo de baja e irse a e-Boletas gratuito del SII? Si <strong>no puede dejarlo</strong>, evaluamos <strong>DTEmite</strong> (pueden <strong>coexistir</strong>) — Apéndice A.”</td></tr>
+<tr><td>B4 voucher</td><td>“¿Quiere seguir con voucher = boleta, o pasar a emitir boleta por cada venta con AgendaPro? Si quiere <strong>emisión automática con AgendaPro</strong> (boleta empresa, Split, sillón, etc.), <strong>no puede</strong> quedarse en voucher: hay que cambiar el modelo en el SII a ‘siempre emito’.”</td></tr>
+<tr><td>B5 no sabe</td><td>“¿Agendamos 10 min con quien tenga la clave SII?”</td></tr>
+</table>
+<p><strong>Pregunta de modelo SII (obligatoria si va a emitir con nosotros):</strong></p><blockquote>“En el SII, cuando cobra con tarjeta, ¿declaró que <strong>siempre emite boleta</strong>, o que <strong>el voucher le sirve</strong> y no emite boleta aparte?”</blockquote><table>
+<tr><th>Respuesta</th><th>Acción</th></tr>
+<tr><td>Siempre emito</td><td>Puede integrar e-Boletas</td></tr>
+<tr><td>Voucher = boleta / no emito</td><td>No integrar emisión (o cambiar modelo en SII primero, con su contador)</td></tr>
+</table>
+<p><strong>Stop crítico — doble tributación:</strong> si el comercio tiene <strong>voucher = boleta</strong> y AgendaPro también emite boletas → el comercio puede quedar tributando <strong>dos veces</strong>. Antes del go-live de emisión, el modelo en SII debe quedar en <strong>“siempre emito mis boletas”</strong> (aunque cobre con medios electrónicos). <strong>Ideal:</strong> que el cliente (o su contador) envíe el <strong>certificado / comprobante de declaración del modelo de emisión de la empresa</strong>. Si no lo tiene a mano, revisarlo juntos con clave SII.</p><p><strong>Aclaración e-Boletas vs DTEmite:</strong> ventas a veces promete “API / facturador”. Este procedimiento usa <strong>e-Boletas (SII, gratuito)</strong>. Si el cliente requiere <strong>DTEmite</strong> (partner facturador de mercado, pagado, proceso paralelo) — p. ej. <strong>Salud</strong>, o <strong>ya tiene facturador de mercado y no puede dejarlo</strong> para e-Boletas (pueden <strong>coexistir</strong>) — no armes e-Boletas aquí: escala / sigue el <strong>Apéndice A</strong>.</p><hr/><h3>Bloque C — Profesionales y comisiones (define Split vs boleta empresa)</h3><table>
+<tr><th>#</th><th>Pregunta</th><th>Anotar</th></tr>
+<tr><td>C1</td><td>“¿Los profesionales emiten <strong>boleta de honorarios (BHE)</strong> o <strong>todo va al RUT del salón</strong>?”</td><td>BHE / todo comercio / mixto</td></tr>
+<tr><td>C2</td><td>“¿Las comisiones son <strong>porcentaje</strong> (ej. 40%) o <strong>monto fijo en pesos</strong>?”</td><td>% / $ fijo</td></tr>
+<tr><td>C3</td><td>“¿Trabajan con <strong>arriendo de sillón</strong> (el profesional factura el 100% y ustedes les cobran arriendo aparte)?”</td><td>Sí / No / contrato sillón pero % en AP</td></tr>
+<tr><td>C4</td><td>“¿Tienen lista de profesionales con <strong>RUT</strong> e <strong>inicio de actividades</strong>?”</td><td>Completa / parcial / no</td></tr>
+<tr><td>C5</td><td>“¿Los profesionales <strong>autorizaron</strong> a AgendaPro a emitir sus boletas?”</td><td>Sí / no / algunos</td></tr>
+<tr><td>C6</td><td>(Peluquería/salón) “¿El giro de honorarios es <strong>960200</strong> u otro?”</td><td>Código / no sabe</td></tr>
+<tr><td>C7</td><td>“¿Hay profesionales <strong>sin papeles / extranjeros</strong> sin inicio de actividades?”</td><td>Sí / No → ver excepción 100% comercio</td></tr>
+</table>
+<p><strong>Importante — giro 960200 y RUT del cliente final:</strong>  </p><p>Solo el giro <strong>960200</strong> permite emitir <strong>BHE sin exigir el RUT del cliente final</strong>. Si quieren usar <strong>otro giro</strong>, sí se puede, pero <strong>siempre</strong> deben contar con el RUT del cliente en AgendaPro; si no, <strong>no se podrán emitir esas BHE</strong>. Las boletas del comercio <strong>sí se emitirán</strong>; fallan solo las BHE sin RUT del cliente.</p><p><strong>Cómo decidir el modelo (dilo en voz alta al cliente):</strong></p><table>
+<tr><th>Si…</th><th>Modelo a configurar</th></tr>
+<tr><td>Todo al RUT del salón (servicios y/o productos)</td><td><strong>Boleta empresa</strong> (afecta o exenta según giro)</td></tr>
+<tr><td>Comercio + % comisión + BHE profesional (servicios)</td><td><strong>Split</strong> (BNA + BHE)</td></tr>
+<tr><td><strong>Productos + servicios con Split</strong></td><td><strong>Dos reglas:</strong> productos = boleta empresa 100%; servicios = Split</td></tr>
+<tr><td>Profesional factura 100%</td><td><strong>Arriendo de sillón</strong> (100% BHE; arriendo lo factura el comercio aparte, no AP)</td></tr>
+<tr><td>Comisión en $ fijo + quieren Split</td><td>Primero migrar comisiones a <strong>%</strong>; si no, no Split</td></tr>
+<tr><td>Profesional sin BHE / sin inicio (ej. extranjero)</td><td>Excepción: <strong>100% boleta empresa</strong> para esa persona (comercio asume IVA; negociar con el profesional)</td></tr>
+</table>
+<p><strong>Guion — retención del ~15% (confusión muy frecuente):</strong></p><blockquote>“Cuando AgendaPro emite la BHE del profesional <strong>hacia el cliente final</strong> (persona natural), <strong>ustedes no retienen</strong> el impuesto del profesional y <strong>AgendaPro tampoco</strong>. Ustedes le pagan su % de comisión <strong>completo</strong>; el profesional paga su retención mensualmente en el SII. Eso es distinto a cuando <strong>una empresa le emite</strong> una boleta de honorarios <strong>al profesional</strong> (ahí la empresa sí actúa como agente retenedor). Aquí no es esa figura.”</blockquote><p><strong>Contrato sillón vs configuración Split:</strong> el cliente puede tener contrato de “arriendo de sillón” (ej. “ellas nos pagan el 60%”) por temas laborales/legales. Eso lo ve con abogado/contador. En AgendaPro, si el acuerdo operativo es dividir por % de comisión → se configura <strong>Split</strong> con comisiones en %; no inventamos la figura legal.</p><hr/><h3>Bloque D — Productos, giros y locales</h3><table>
+<tr><th>#</th><th>Pregunta</th><th>Anotar</th></tr>
+<tr><td>D1</td><td>“¿Venden <strong>productos</strong> (champú, cremas, etc.) además de servicios?”</td><td>Sí / No</td></tr>
+<tr><td>D2</td><td>“¿Sus servicios son con <strong>IVA (afectos)</strong> o <strong>exentos</strong> (ej. salud)?”</td><td>Afecto / exento / mixto</td></tr>
+<tr><td>D3</td><td>“¿Un solo <strong>RUT</strong> / un local, o varios?”</td><td>1 / varios</td></tr>
+<tr><td>D4</td><td>“¿Inicio de actividades en SII al día?”</td><td>Sí / No / no sabe</td></tr>
+</table>
+<p><strong>Recuerda:</strong> producto = siempre boleta afecta con IVA, <strong>100% boleta empresa</strong> (regla propia). Si además hay Split en servicios → clonas <strong>dos</strong> reglas (Paso 8).</p><hr/><h3>Bloque E — POS y cobro</h3><table>
+<tr><th>#</th><th>Pregunta</th><th>Anotar</th></tr>
+<tr><td>E1</td><td>“¿Ya tienen POS AgendaPro en camino o recibido?”</td><td>No / en camino / recibido</td></tr>
+<tr><td>E2</td><td>“Hoy, ¿con qué cobran tarjeta?” (Transbank AP, Getnet/tú, MP, otro)</td><td>Marca</td></tr>
+<tr><td>E3</td><td>“¿Pueden comprometer que la <strong>mayoría de cobros con tarjeta</strong> pasen por el POS AgendaPro (meta ~70%)?”</td><td>Sí / reticente</td></tr>
+<tr><td>E4</td><td>“¿Quién hará la primera venta de prueba con nosotros?”</td><td>Nombre</td></tr>
+</table>
+<p><strong>Flujo que debes explicar (software → máquina → boleta):</strong></p><ol><li>En AgendaPro se arma el <strong>carrito</strong> (reservas del día + extras + profesionales).  </li><li>Se manda el cobro a la máquina POS.  </li><li>El cliente paga → la máquina <strong>avisa al software</strong> el monto.  </li><li>AgendaPro emite el/los DTE según comisiones + reglas Tready → llegan al <strong>correo</strong> del cliente (ideal tener email en ficha).  </li></ol><p><strong>Ojo:</strong> si se cobra solo en la máquina (“pago rápido”) <strong>sin</strong> pasar por el carrito de AgendaPro, <strong>no</strong> se emite boleta automática. Se puede ingresar después a mano en AP.</p><p><strong>Si usan el POS AgendaPro antes de tener boletas activas:</strong> esto aplica <strong>solo si el voucher NO es válido como boleta</strong> (modelo “siempre emito”). En ese caso, cada cobro queda informado al SII vía POS; deben emitir boletas manualmente o esperar go-live — si no, quedan “recaudado sin boleta”. Si su modelo es <strong>voucher = boleta</strong>, el voucher cubre esa obligación (pero entonces <strong>no</strong> pueden activar emisión automática en AgendaPro sin cambiar el modelo, por doble tributación).</p><hr/><h3>Bloque F — Cierre de la reunión (tareas para el cliente)</h3><p><strong>Resume en 1 minuto:</strong></p><blockquote>“Quedó así: modelo <strong>[boleta empresa / Split / productos+Split (2 reglas) / sillón / solo POS]</strong>. Facturador <strong>[e-Boletas / hay que migrar / voucher]</strong>. Siguiente paso: ustedes habilitan e-Boletas + autorizan emisor; profesionales autorizan a AgendaPro; nosotros configuramos Back Office y hacemos boleta de prueba. Revisamos modelo de emisión SII para no doble-tributar.”</blockquote><p><strong>Tareas cliente (envíalas por WA al terminar):</strong></p><ol><li>Confirmar <strong>e-Boletas habilitado</strong> (no basta con “usuario autorizado”; es el sistema gratuito de emisión).  </li><li>Comercio: autorizar <strong>exclusivamente a Pablo Marambio, RUT 15.776.844-1</strong>, con <strong>todos los permisos de usuario excepto administrador</strong>.  </li><li>Cada profesional: inicio de actividades + autorizar a AgendaPro en su SII + e-Boletas propio.  </li><li>Confirmar modelo SII = “siempre emito” (si aplica) y <strong>enviar certificado / comprobante de declaración del modelo de emisión de la empresa</strong>.  </li><li>Enviar / confirmar lista profesionales + RUT.  </li><li>Si comisiones en $ → pasarlas a <strong>%</strong> en AgendaPro.  </li><li>Avisar cuando llegue el POS / WiFi conectado.  </li><li>(Opcional) Citar contador para modelo de emisión / regularización de ventas previas.</li></ol><p><strong>Marca journey:</strong></p><ul><li>Tras completar el diagnóstico → <strong>3 · Verificar información del formulario y levantamiento formal…</strong></li></ul><p><strong>Checklist Paso 3 (ficha completa)</strong></p><div class="check">☐ A1–A4  </div><div class="check">☐ B (cómo emite hoy) + modelo SII (¿doble tributación?)  </div><div class="check">☐ C1–C7 (profesionales/comisiones/retención explicada)  </div><div class="check">☐ D1–D4  </div><div class="check">☐ E1–E4 + flujo carrito entendido  </div><div class="check">☐ Modelo elegido: _______________  </div><div class="check">☐ ¿Puede seguir este doc (e-Boletas)? Sí / No → si No, escalar KAM  </div><div class="check">☐ Journey tarea 3 marcada  </div><hr/><h2 id="parte-c-configurar-después-de-la-reunión">PARTE C — Configurar (después de la reunión)</h2><p>Hazlo en este orden. Si el caso es <strong>solo POS (tipo A)</strong> sin boletas, salta a Paso 9 (POS) y no hagas 4–8.</p><h2 id="paso-4-autorización-sii-e-boletas-con-el-cliente-en-pantalla-o-async">Paso 4. Autorización SII / e-Boletas (con el cliente en pantalla o async)</h2><ol><li>Cliente entra a <strong>e-Boletas (SII)</strong>.  </li><li>Verifica que e-Boletas esté <strong>habilitado</strong> (sistema gratuito de emisión).  </li></ol><ul><li>Tener “usuario autorizado” <strong>no alcanza</strong>: hace falta el sistema e-Boletas activo.  </li><li>Se puede chequear en SII (dato público) si el RUT ya tiene e-Boletas.  </li></ul><ol><li><strong>Autoriza / crea emisor AgendaPro</strong> para el comercio  </li></ol><ul><li>Emisión a nombre de empresa: se autoriza <strong>exclusivamente a Pablo Marambio, RUT 15.776.844-1</strong>, como usuario emisor. Deben otorgarle <strong>todos los permisos de usuario excepto administrador</strong>.  </li><li>Referencia visual: instructivo “Autorizar emisor en e-Boletas” (Notion / Drive CX)  </li></ul><ol><li>Si es <strong>Split:</strong> cada profesional debe:</li></ol><ul><li>Tener inicio de actividades / giro (ej. 960200)  </li><li>Tener e-Boletas propio  </li><li>Autorizar a AgendaPro (<strong>RUT 76.233.336-8</strong>, razón social <strong>Gunei investment SpA</strong>) a emitir sus BHE  </li></ul><ol><li>Guarda captura.  </li></ol><p>→ Marca journey <strong>4 · Revisar giro y permisos… Autorizar a AgendaPro a emitir boletas</strong>.</p><p><strong>Stop:</strong> sin emisor autorizado + e-Boletas activo → no actives emisión en producción.</p><hr/><h2 id="paso-5-sanidad-de-la-cuenta-saas">Paso 5. Sanidad de la cuenta SaaS</h2><p>Personifica la cuenta y revisa:</p><table>
+<tr><th>Check</th><th>OK si…</th></tr>
+<tr><td>Locales / profesionales / servicios / precios</td><td>Coinciden con lo hablado</td></tr>
+<tr><td>Comisiones</td><td>En <strong>%</strong> si habrá Split</td></tr>
+<tr><td>RUT profesionales</td><td>Disponibles o el cliente los enviará</td></tr>
+<tr><td>Métodos de pago</td><td>POS AgendaPro disponible cuando llegue la máquina</td></tr>
+<tr><td>Emails de clientes</td><td>Ideales para que el DTE llegue por correo</td></tr>
+</table>
+<p><strong>Comisiones — tip de campo (Administración → Comisiones):</strong></p><ol><li>Si la mayoría de servicios de un profesional es el mismo % → <strong>Editar por defecto</strong> (pone % en todos los servicios actuales).  </li><li>Luego <strong>Editar</strong> y corrige solo las excepciones (Pareto 80/20).  </li><li><strong>Servicios nuevos</strong> no heredan el % → quedan en 0; hay que editarlos.  </li><li>Cuidado: si vuelves a poner “por defecto”, puedes <strong>pisar</strong> los % especiales. Mejor abrir y corregir solo los que están en 0.</li></ol><p>Si comisión es $ fijo y van a Split → cambia a % <strong>antes</strong> de crear la regla.</p><hr/><h2 id="paso-6-back-office-feature-flag-166-módulo-facturación">Paso 6. Back Office — Feature Flag 166 (módulo Facturación)</h2><p>Guía: <a href="https://app.notion.com/p/1e3ab34c233b8015979ec811067bf234">https://app.notion.com/p/1e3ab34c233b8015979ec811067bf234</a></p><ol><li>Entra a <a href="https://backoffice.agendapro.com/">https://backoffice.agendapro.com/</a>  </li><li><strong>AgendaPro → Feature Flags</strong>  </li><li>Busca Feature <strong>ID 166</strong> → Editar  </li><li>Agrega el <code>company_id</code> al final del Value, <strong>con coma</strong>, sin espacios; siempre coma al final  </li><li>Update  </li><li>Personifica → debe aparecer <strong>Administración → Facturación</strong></li></ol><hr/><h2 id="paso-7-solicitar-credenciales-sii-mail-request-credentials">Paso 7. Solicitar credenciales SII (mail Request credentials)</h2><p><strong>Para qué:</strong> Tready e-Boletas emite con login al SII del emisor autorizado (<strong>Pablo Marambio</strong>). Las credenciales se cargan con un <strong>mail seguro</strong> (link de un solo uso). <strong>Nunca</strong> pidas ni compartas clave SII por WhatsApp, Chatwoot ni correo libre.</p><p><strong>Referencia:</strong> Manual Tready → sección e-Boletas (<a href="https://app.notion.com/p/48f2a869ed47459fa395056065f066c7">Notion</a>) · mail de producto <strong>“Credenciales eboleta”</strong>.</p><h3>Quién completa el mail (autorización en nombre de Pablo)</h3><p>El link llega a <strong><code>carla@agendapro.com</code></strong>. Quienes manejan las credenciales SII de <strong>Pablo Marambio</strong> y dan la autorización:</p><table>
+<tr><th>Rol</th><th>Persona</th><th>Acción</th></tr>
+<tr><td><strong>Principal</strong></td><td><strong>Carla Revello</strong> (<code>carla@agendapro.com</code>)</td><td>Recibe el mail, ingresa credenciales de Pablo, confirma</td></tr>
+<tr><td><strong>Backup</strong></td><td><strong>Aucan Sierra</strong></td><td>Misma autorización si Carla no está / no responde</td></tr>
+</table>
+<p>→ Tras disparar <strong>Request credentials</strong>, <strong>avisa a Carla</strong> (o a Aucan si ella no está) para que abran el mail y autoricen.</p><h3>Cuándo aplica</h3><table>
+<tr><th>Caso</th><th>¿Request credentials?</th></tr>
+<tr><td>Emisión e-Boletas con emisor <strong>Pablo Marambio</strong> (boleta empresa, Split parte comercio, etc.)</td><td><strong>Sí</strong> — tras autorizar a Pablo en e-Boletas (Paso 4)</td></tr>
+<tr><td>Re-pedir (credenciales vencidas, login fallido, link usado, clave cambiada)</td><td><strong>Sí</strong> — se puede reenviar; sobrescribe las anteriores</td></tr>
+</table>
+<h3>Pre-requisitos</h3><ol><li>Comercio ya autorizó a <strong>Pablo Marambio (RUT 15.776.844-1)</strong> en e-Boletas (Paso 4).  </li><li>Existen providers de esa compañía en <strong>Tready → Provider values</strong> (filtra por <code>company_id</code>).  </li><li>En el provider que uses, el <strong>email debe ser siempre <code>carla@agendapro.com</code></strong>. Si tiene otro mail → cámbialo antes de pedir credenciales. <strong>Sin ese mail el flujo no llega a quien autoriza.</strong></li></ol><h3>Paso a paso (Back Office)</h3><ol><li>Entra a <a href="https://backoffice.agendapro.com/">https://backoffice.agendapro.com/</a>  </li><li><strong>Tready → Provider values</strong>  </li></ol><ul><li>Directo: <a href="https://backoffice.agendapro.com/tready/provider_values">https://backoffice.agendapro.com/tready/provider_values</a>  </li></ul><ol><li>Filtra por la compañía (<code>company</code> / <code>company_id</code>) que estás configurando.  </li><li>Abre <strong>cualquier provider de esa company</strong> (no importa cuál; basta uno del comercio cuyas reglas estás armando) → <strong>Edit</strong>.  </li><li><strong>Agregar el email en Params (vista Tree):</strong>  </li></ol><ul><li>En <strong>Params</strong>, deja la vista en <strong>Tree</strong>.  </li><li>Clic en el ícono del <strong>cuadrado</strong> de una fila (ej. <code>name</code>) → <strong>Append</strong>.  </li><li>En la fila nueva: nombre/clave = <code>email</code> · cajón de al lado = <code>carla@agendapro.com</code>.  </li><li>Si ya existe <code>email</code> con otro valor → edítalo y déjalo en <code>carla@agendapro.com</code>.  </li></ul><ol><li>Guarda (<strong>Update</strong>).  </li><li><strong>View</strong> → clic en <strong>Request credentials</strong>.  </li><li><strong>Avisa a Carla</strong> (o Aucan) por el canal interno: “Request credentials disparado — company_id XXX / nombre comercio”.  </li><li>Carla o Aucan abren el mail <strong>Credenciales eboleta</strong> (bandeja de <code>carla@agendapro.com</code>, revisar spam si no aparece) → ingresan <strong>credenciales SII de Pablo Marambio</strong> en el link.  </li><li>El sistema valida el login; <strong>solo guarda</strong> si son válidas.  </li><li>Confirma en <strong>Tready → Credentials → eboleta</strong> que quedaron cargadas.</li></ol><p><strong>Stop:</strong> sin credenciales válidas en <strong>Credentials → eboleta</strong> → <strong>no</strong> actives Automatic Issuing.</p><p><strong>Tip:</strong> si el mail no llegó o el link ya se usó, vuelve a <strong>Request credentials</strong> (genera link nuevo) y reavisa a Carla/Aucan. No hace falta repetir el request en todos los providers del comercio: <strong>con uno de esa company alcanza.</strong></p><hr/><h2 id="paso-8-back-office-reglas-tready-clonar">Paso 8. Back Office — Reglas Tready (clonar)</h2><p>Guía FE: <a href="https://app.notion.com/p/1d5ab34c233b809b9eb9cef86003e471">https://app.notion.com/p/1d5ab34c233b809b9eb9cef86003e471</a>  </p><p>Planilla reglas: <a href="https://docs.google.com/spreadsheets/d/1wGOUEnEJrn4pO9EgHmB92PS_r8nsW-uWMLk_pKD65bU/edit#gid=216081011">https://docs.google.com/spreadsheets/d/1wGOUEnEJrn4pO9EgHmB92PS_r8nsW-uWMLk_pKD65bU/edit#gid=216081011</a>  </p><p><strong>Curso configuración de reglas</strong> (videos Loom — filtros, Primary Receipt, BHE, productos, clonar): <a href="https://3.basecamp.com/5590595/buckets/32716606/documents/7302147095">https://3.basecamp.com/5590595/buckets/32716606/documents/7302147095</a>  </p><p><strong>No crees reglas desde cero.</strong> Clona. Puede haber <strong>más de una regla</strong> por cuenta.</p><table>
+<tr><th>Modelo acordado en la reunión</th><th>Guía</th><th>ID ejemplo a clonar</th></tr>
+<tr><td>Split servicios (BNA + BHE)</td><td><a href="https://app.notion.com/p/1d5ab34c233b806a90ffef5b5759fa6a">https://app.notion.com/p/1d5ab34c233b806a90ffef5b5759fa6a</a></td><td><strong>355689</strong></td></tr>
+<tr><td>Arriendo sillón (100% BHE)</td><td><a href="https://app.notion.com/p/1d6ab34c233b80feb4e8e918f37cbfed">https://app.notion.com/p/1d6ab34c233b80feb4e8e918f37cbfed</a></td><td><strong>378086</strong></td></tr>
+<tr><td>Boleta empresa (servicios o productos)</td><td>Planilla “Reglas para clonar” (regla e-Boletas afecta/exenta)</td><td>Según planilla</td></tr>
+<tr><td><strong>Productos + Split servicios</strong></td><td>Clona <strong>2 reglas</strong>: (1) boleta empresa 100% productos · (2) Split servicios</td><td>Planilla + <strong>355689</strong></td></tr>
+</table>
+<p><strong>Pasos:</strong></p><ol><li>Back Office → <strong>Tready → Rules</strong>  </li><li>Busca el ID ejemplo → <strong>View</strong> → <strong>Clone Rule</strong>  </li><li>Cambia: <strong>Company</strong> = company_id · <strong>Issuer Identification</strong> = RUT comercio · <strong>Issuer Name</strong> = razón social  </li><li>Si Split: pestaña <strong>Fee Receipt</strong> → tipo boleta honorarios (los % salen del módulo Comisiones)  </li><li>Si hay productos + Split: clona primero la regla de <strong>productos</strong> (boleta empresa 100%) y después la de <strong>servicios (Split)</strong>. Ajusta filtros/condiciones para que cada regla aplique al tipo de ítem correcto.  </li><li>Al inicio: <strong>Automatic Issuing = No</strong> (emite borrador para validar)  </li><li>Guarda el/los <strong>ID(s) de la(s) regla(s) nueva(s)</strong> en el caso  </li></ol><p><strong>Columna <code>rut</code> (obligatoria si hay BHE):</strong></p><ol><li>Administración → Facturación (ya visible con flag 166)  </li><li>En profesionales, crea columna llamada exactamente <strong><code>rut</code></strong> (minúscula) — botón “+” / nombre del campo  </li><li>Carga el RUT de cada profesional  </li><li><strong>Si la columna queda vacía y cierran sesión, desaparece.</strong> Al crearla escribe al menos un valor (placeholder típico: <code>1-9</code>) y luego completa los RUT reales.  </li><li>Profesionales nuevos aparecen solos en Facturación <strong>sin</strong> RUT → el cliente debe cargarlo (autonomía; no hace falta llamar a Propay cada alta, salvo figura distinta a BHE).</li></ol><p><strong>Si un profesional NO quiere BHE</strong> (quiere boleta afecta propia, sociedad de profesionales exenta, etc.):</p><ul><li>No alcanza con poner RUT.  </li><li>Escalar a soporte / Back Office para excepción por profesional.  </li><li>Explicar al cliente el canal (ícono AgendaPro → humano, no solo bot).</li></ul><p><strong>Si profesional sin inicio de actividades / sin papeles:</strong></p><ul><li>Configurar excepción: esa persona → <strong>100% boleta empresa</strong> (aunque tenga comisión en el SaaS).  </li><li>El comercio “se come” el IVA de esa parte; lo negocian ellos.</li></ul><hr/><h2 id="paso-9-pos-si-el-caso-incluye-máquina">Paso 9. POS (si el caso incluye máquina)</h2><p>En paralelo o después del Paso 4; <strong>no frenes el envío por las boletas</strong>.</p><ol><li>Merchant code Transbank (target <strong>24h</strong>) — ver Manuales POS en Notion.  </li><li>Config + despacho (Chilexpress / tracking).  </li><li>Cuando el cliente confirma llegada → marca journey <strong>5 · Confirmar recibimiento de POS</strong>.  </li><li>Conectar a <strong>WiFi del local</strong> (más estable que SIM, sobre todo en spa/salas cerradas).  </li></ol><ul><li>Ajustes de la máquina: clave típica de fábrica <strong>123456</strong> (1–6).  </li><li>También se puede abrir WiFi desde la “persianita” como un celular.  </li></ul><ol><li>Video + reunión corta de uso.  </li></ol><p>Detalle técnico terminal:  </p><ul><li>Haulmer: <a href="https://app.notion.com/p/1ecab34c233b80429cecee8dd69fdf4f">https://app.notion.com/p/1ecab34c233b80429cecee8dd69fdf4f</a>  </li><li>Transbank: <a href="https://app.notion.com/p/1eaab34c233b80258d8be8bd46d3e4f3">https://app.notion.com/p/1eaab34c233b80258d8be8bd46d3e4f3</a>  </li></ul><hr/><h2 id="paso-10-capacitación-con-el-cliente-pos-boletas">Paso 10. Capacitación con el cliente (POS + boletas)</h2><p>Agenda la sesión (journey <strong>6 · Capacitación de POS y Boletas</strong>). Ideal con quien opera caja.</p><p><strong>Enséñale, en orden:</strong></p><ol><li>Armar el <strong>carrito completo</strong> antes de cobrar (todas las reservas del día + extras + profesionales).  </li></ol><ul><li>Al agendar: “agregar otra reserva” <strong>antes</strong> de guardar (no salir y volver).  </li><li>En caja: “todas las reservas del día” / carrito para un solo pase de tarjeta.  </li><li>Varios medios de pago en el mismo carrito = OK.  </li></ul><ol><li>Cobrar una venta <strong>desde AgendaPro</strong> (no solo app Transbank / pago rápido en máquina).  </li><li>“El POS cobra; AgendaPro emite el DTE al correo.”  </li><li>Meta: mayoría de tarjetas por POS AgendaPro (~70%).  </li><li>Qué hacer si la boleta no sale → avisar a Propay / soporte.  </li><li>Altas de profesionales: RUT en Facturación + permiso SII; si la figura no es BHE → avisar a soporte.  </li><li>Comisiones: por defecto + excepciones; revisar ceros al crear servicios nuevos.</li></ol><p>→ Marca journey <strong>6</strong> cuando termine la capacitación.</p><hr/><h2 id="paso-11-prueba-de-cobro-boleta-hasta-que-esté-todo-ok">Paso 11. Prueba de cobro + boleta (hasta que esté todo OK)</h2><h3>11.1 Registrar pago</h3><ol><li>Crea una venta de prueba en AgendaPro.  </li><li>Cobra con <strong>POS</strong> (o efectivo si aún no hay POS).  </li><li>Confirma que la TX se ve en AgendaPro.  </li></ol><p>→ Marca journey <strong>7 · Registrar pagos en plataforma y POS</strong>.</p><h3>11.2 Emitir boleta en borrador</h3><ol><li>Emite / genera boleta desde AgendaPro en modo <strong>borrador</strong> (si Automatic Issuing = No).  </li><li>Verifica:</li></ol><ul><li>[ ] Tipo correcto (afecta / exenta / BHE / split)  </li><li>[ ] Montos cuadran (en Split: las dos boletas suman el total)  </li><li>[ ] RUT comercio / profesional correctos  </li></ul><ol><li>Si falla → corrige regla / RUT / comisiones / credenciales (Paso 7) y repite. <strong>No pases a automático.</strong>  </li></ol><p>→ Marca journey <strong>8 · Emitir manualmente una boleta desde AgendaPro (borrador)</strong>.</p><h3>11.3 Pasar a emisión automática (cuando el borrador esté perfecto)</h3><ol><li>En la regla Tready: <strong>Automatic Issuing = Yes</strong> (o el equivalente).  </li><li>Haz <strong>una venta real chica</strong> y confirma boleta al SII + correo del cliente (si hay email).  </li><li>Guarda folio / captura en el caso.</li></ol><p><strong>Ahora está configurado.</strong></p><hr/><h2 id="paso-12-cierre-del-caso">Paso 12. Cierre del caso</h2><div class="check">☐ Journey 1–8 marcados (o los que apliquen: tipo C sin POS no marca 5/7 igual)  </div><div class="check">☐ ID(s) regla Tready anotados  </div><div class="check">☐ Flag 166 OK  </div><div class="check">☐ Credenciales e-Boletas OK en <strong>Credentials → eboleta</strong> (si el caso las requiere · Paso 7)  </div><div class="check">☐ Cliente sabe canal de soporte  </div><div class="check">☐ Si hay POS: deja el caso en monitoreo retainer (1ª → 5ª → 15ª → +30 tx)  </div><div class="check">☐ Avisa a KAM que FE quedó operativo (o solo POS si tipo A)</div><hr/><h2 id="parte-d-hojas-rápidas">PARTE D — Hojas rápidas</h2><h2 id="journey-cm-las-8-tareas">Journey CM — las 8 tareas</h2><table>
+<tr><th>#</th><th>Tarea</th><th>Paso de esta guía</th></tr>
+<tr><td>1</td><td>Completar formularios POS y Boletas</td><td>Paso 0</td></tr>
+<tr><td>2</td><td>Coordinar reunión de planificación</td><td>Paso 1</td></tr>
+<tr><td>3</td><td>Verificar form + levantamiento formal boletas</td><td>Paso 3</td></tr>
+<tr><td>4</td><td>Revisar giro/permisos SII + autorizar AgendaPro</td><td>Paso 4</td></tr>
+<tr><td>5</td><td>Confirmar recibimiento de POS</td><td>Paso 9</td></tr>
+<tr><td>6</td><td>Capacitación de POS y Boletas</td><td>Paso 10</td></tr>
+<tr><td>7</td><td>Registrar pagos en plataforma y POS</td><td>Paso 11.1</td></tr>
+<tr><td>8</td><td>Emitir boleta manual (borrador)</td><td>Paso 11.2</td></tr>
+</table>
+<h2 id="si-en-la-reunión-descubriste-que-no-puedes-usar-e-boletas">Si en la reunión descubriste que NO puedes usar e-Boletas</h2><table>
+<tr><th>Hallazgo</th><th>Qué hacer</th></tr>
+<tr><td>Voucher = boleta y no quiere cambiar</td><td>Solo POS (si aplica). No configures emisión.</td></tr>
+<tr><td>Voucher = boleta <strong>y</strong> quieren emisión AP</td><td>Cambiar modelo SII a “siempre emito” <strong>antes</strong> del go-live (si no → doble tributación).</td></tr>
+<tr><td>BSale / Nubox / Mercado Pago facturador</td><td>Pedir migrar a e-Boletas. Si <strong>no puede dejar</strong> su facturador → <strong>DTEmite</strong> (pueden <strong>coexistir</strong>) · <strong>Apéndice A</strong>. <strong>No configures e-Boletas aquí.</strong></td></tr>
+<tr><td>Requiere <strong>DTEmite</strong> (pagado; frecuente <strong>Salud</strong>; o no puede dejar su facturador de mercado → <strong>coexisten</strong>)</td><td><strong>No</strong> uses este procedimiento e-Boletas. Proceso paralelo → <strong>Apéndice A</strong> / escalar.</td></tr>
+<tr><td>Quiere facturas</td><td>Fuera de alcance e-Boletas. Escalar KAM (puede ir por DTEmite u otro).</td></tr>
+<tr><td>Split + voucher</td><td>Explicar incompatibilidad; elegir.</td></tr>
+<tr><td>Profesional sin inicio / extranjero</td><td>Excepción 100% boleta empresa para esa persona.</td></tr>
+<tr><td>“La empresa siempre me emitía y retenía”</td><td>Explicar figura distinta: BHE al cliente final → sin retención del comercio.</td></tr>
+</table>
+<h2 id="regularizar-ventas-ya-cobradas-sin-boleta-marcha-blanca">Regularizar ventas ya cobradas sin boleta (marcha blanca)</h2><p>Si el cliente ya cobró en AgendaPro <strong>antes</strong> de activar emisión (pocas TX del mismo mes):</p><ol><li>Intentar <strong>reprocesar</strong> el pago para que tome la integración.  </li><li>Si no: <strong>anular / quitar</strong> e <strong>reingresar</strong> el pago.  </li><li>Al reingresar: usar medio <strong>débito / crédito / efectivo / transferencia</strong> — <strong>no</strong> “POS” (obligaría a pasar la tarjeta de nuevo).  </li><li>La fecha del DTE quedará al día del reingreso; ideal <strong>mismo mes</strong> tributario.</li></ol><h2 id="fuentes-para-profundizar">Fuentes (para profundizar)</h2><ul><li><strong>Curso configuración de reglas</strong> (Basecamp · videos): <a href="https://3.basecamp.com/5590595/buckets/32716606/documents/7302147095">https://3.basecamp.com/5590595/buckets/32716606/documents/7302147095</a>  </li><li><strong>Manual Tready</strong> (Request credentials / e-Boletas): <a href="https://app.notion.com/p/48f2a869ed47459fa395056065f066c7">https://app.notion.com/p/48f2a869ed47459fa395056065f066c7</a>  </li><li>Proceso clientes antiguos: <a href="https://app.notion.com/p/3a3ab34c233b81c8b8f6f410a6121d1a">https://app.notion.com/p/3a3ab34c233b81c8b8f6f410a6121d1a</a>  </li><li>FE Chile: <a href="https://app.notion.com/p/1d5ab34c233b809b9eb9cef86003e471">https://app.notion.com/p/1d5ab34c233b809b9eb9cef86003e471</a>  </li><li>Flag 166: <a href="https://app.notion.com/p/1e3ab34c233b8015979ec811067bf234">https://app.notion.com/p/1e3ab34c233b8015979ec811067bf234</a>  </li><li>Split: <a href="https://app.notion.com/p/1d5ab34c233b806a90ffef5b5759fa6a">https://app.notion.com/p/1d5ab34c233b806a90ffef5b5759fa6a</a>  </li><li>Sillón: <a href="https://app.notion.com/p/1d6ab34c233b80feb4e8e918f37cbfed">https://app.notion.com/p/1d6ab34c233b80feb4e8e918f37cbfed</a>  </li><li>Manuales ONB: <a href="https://app.notion.com/p/2d1ab34c233b80aca8c1fd7318491d69">https://app.notion.com/p/2d1ab34c233b80aca8c1fd7318491d69</a>  </li><li>Configuración DTEmite (referencia existente): <a href="https://app.notion.com/p/279ab34c233b801ebdebf6c3adff0b6b">https://app.notion.com/p/279ab34c233b801ebdebf6c3adff0b6b</a>  </li></ul><hr/><h2 id="anexos-comisiones-giftcards">Anexos de campo — Comisiones y Gift Cards</h2><h3 id="facturacion-de-comisiones-de-pagos">Facturación de comisiones de pagos (cómo responderle al cliente)</h3><ul><li>El <strong>abono</strong> al comercio es <strong>diario</strong>, ya con la <strong>comisión / tasa descontada</strong> (el descuento ocurre día a día).</li><li>La <strong>factura por las comisiones / tasas</strong> se <strong>envía 1 vez al mes</strong> por país (según las transacciones exitosas de ese mes). <strong>La factura no es diaria</strong>, aunque el descuento sí ocurre en cada abono.</li><li>Esas facturas <strong>ya están pagadas</strong> (la comisión se descontó en los abonos diarios) → el cliente <strong>no</strong> debe pagarlas aparte.</li><li>El cliente ve el detalle en <strong>Ventas → Pagos en Línea</strong> → filtrar el mes correspondiente.</li><li>El <strong>reporte de comisiones NO descuenta IVA</strong>.</li></ul><h3 id="gift-cards-y-split">Gift cards y Split</h3><ul><li>La gift card <strong>se factura al canjear, no al venderla.</strong> El <strong>canje</strong> es el hito que genera la boleta.</li><li>Por eso el canje <strong>permite el Split</strong> (boleta comercio + BHE del profesional, según las reglas Tready configuradas).</li><li>Al <strong>vender</strong> la gift card no se emite la boleta del servicio; la emisión ocurre <strong>cuando el cliente la canjea</strong> por el servicio o producto.</li></ul><h2 id="apéndice-a-dtemite-facturador-de-mercado-partner-en-preparación">Apéndice A — DTEmite (facturador de mercado partner) · EN PREPARACIÓN</h2><p><strong>Estado:</strong> placeholder — se documentará lo antes posible como proceso paralelo a este.</p><p><strong>Manual canónico (Customer Experience):</strong> <a href="https://app.notion.com/p/279ab34c233b801ebdebf6c3adff0b6b">🧾 Configuración DTEmite para facturación</a></p><h3>Qué es</h3><ul><li><strong>DTEmite</strong> es nuestro <strong>partner como facturador de mercado</strong>.  </li><li>Es <strong>facturación pagada aparte</strong> (no es e-Boletas gratuito del SII).  </li><li>Se integra con AgendaPro / Tready mediante un <strong>proceso paralelo adicional</strong> (no es el flujo 0→configurado de este documento).</li></ul><h3>Cuándo aplica</h3><ul><li>El cliente <strong>requiere</strong> DTEmite (o ventas/KAM lo vendió así).  </li><li>Es <strong>más frecuente</strong> en vertical <strong>Salud</strong>, pero <strong>no es exclusivo</strong> de Salud.  </li><li>También cuando el cliente <strong>ya tiene otro facturador de mercado</strong> y <strong>no puede (o no quiere) darlo de baja</strong> para inscribirse / migrar a <strong>e-Boletas</strong>: con DTEmite podemos operar y <strong>coexisten</strong> el/los facturador(es) de mercado del cliente con la integración AgendaPro.  </li><li>En esos casos <strong>no</strong> fuerces migración a e-Boletas con este procedimiento.</li></ul><h3>Qué hacer mientras no esté el apéndice completo</h3><ol><li><strong>No</strong> configures e-Boletas con este procedimiento si el camino acordado es DTEmite.  </li><li>Sigue el manual: <a href="https://app.notion.com/p/279ab34c233b801ebdebf6c3adff0b6b">Configuración DTEmite para facturación</a>.  </li><li>Escala a quien opere DTEmite / KAM / Propay según handoff del caso.</li></ol><p><em>Próximo: completar aquí el paso a paso DTEmite (0→configurado), incluyendo coexistencia con facturadores de mercado del cliente.</em></p><hr/><p><em>AgendaPro · CX · De 0 a configurado · e-Boletas · Journey Implementación POS y F.E. Chile · v2.3 · Jul 2026 · Enriquecido con reunión de implementación en terreno</em></p>
+</div>
+<script>
+(function() {
+  const viewFlujo = document.getElementById('view-flujo');
+  const viewMatriz = document.getElementById('view-matriz');
+  const tabFlujo = document.getElementById('tab-flujo');
+  const tabMatriz = document.getElementById('tab-matriz');
+  const topSwitch = document.getElementById('top-switch');
+
+  function showFlujo() {
+    viewFlujo.classList.remove('hidden');
+    viewMatriz.classList.remove('visible');
+    tabFlujo.classList.add('active');
+    tabMatriz.classList.remove('active');
+    topSwitch.style.display = '';
+    history.replaceState(null, '', '#flujo');
+    window.scrollTo(0, 0);
+  }
+
+  function showMatriz(anchor) {
+    viewFlujo.classList.add('hidden');
+    viewMatriz.classList.add('visible');
+    tabFlujo.classList.remove('active');
+    tabMatriz.classList.add('active');
+    topSwitch.style.display = '';
+    const hash = anchor ? ('#' + anchor) : '#matriz';
+    history.replaceState(null, '', hash);
+    requestAnimationFrame(() => {
+      if (anchor) {
+        let el = document.getElementById(anchor);
+        if (!el) { try { el = document.querySelector('[id="' + anchor.replace(/"/g, '\\"') + '"]'); } catch (e) { el = null; } }
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        else window.scrollTo(0, 0);
+      } else {
+        window.scrollTo(0, 0);
+      }
+    });
+  }
+
+  tabFlujo.addEventListener('click', showFlujo);
+  tabMatriz.addEventListener('click', () => showMatriz());
+  document.getElementById('btn-back-flujo').addEventListener('click', showFlujo);
+
+  /* ===== Buscador de temas ===== */
+  function norm(s) {
+    return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  // Índice: todos los encabezados con id dentro de la matriz (cada "tema")
+  const headings = Array.prototype.slice.call(
+    viewMatriz.querySelectorAll('h1[id], h2[id], h3[id]')
+  );
+  const INDEX = headings.map(function (h) {
+    const isSub = h.tagName.toLowerCase() === 'h3';
+    let label = 'Sección';
+    const t = h.textContent.trim();
+    if (/^parte\s/i.test(t)) label = 'Parte';
+    else if (/^paso\s/i.test(t)) label = 'Paso';
+    else if (/^bloque\s/i.test(t)) label = 'Bloque';
+    else if (isSub) label = 'Detalle';
+    else if (/^ap[eé]ndice/i.test(t)) label = 'Apéndice';
+    return { id: h.id, text: t, norm: norm(t), part: label };
+  });
+
+  const input = document.getElementById('topic-search');
+  const resultsEl = document.getElementById('search-results');
+  let matches = [];
+  let hlIndex = -1;
+
+  function flashAnchor(anchor) {
+    const el = document.getElementById(anchor);
+    if (!el) return;
+    el.classList.remove('anchor-flash');
+    void el.offsetWidth; // reinicia animación
+    el.classList.add('anchor-flash');
+    setTimeout(function () { el.classList.remove('anchor-flash'); }, 2400);
+  }
+
+  function goTo(anchor) {
+    closeResults();
+    input.value = '';
+    showMatriz(anchor);
+    setTimeout(function () { flashAnchor(anchor); }, 260);
+  }
+
+  function closeResults() {
+    resultsEl.classList.remove('open');
+    resultsEl.innerHTML = '';
+    hlIndex = -1;
+    matches = [];
+  }
+
+  function highlight(delta) {
+    const btns = resultsEl.querySelectorAll('button');
+    if (!btns.length) return;
+    hlIndex = (hlIndex + delta + btns.length) % btns.length;
+    btns.forEach(function (b, i) { b.classList.toggle('hl', i === hlIndex); });
+    btns[hlIndex].scrollIntoView({ block: 'nearest' });
+  }
+
+  function render(q) {
+    const nq = norm(q).trim();
+    if (!nq) { closeResults(); return; }
+    // tokeniza para permitir "paso 8", "split servicios", etc.
+    const tokens = nq.split(/\s+/).filter(Boolean);
+    matches = INDEX.filter(function (item) {
+      return tokens.every(function (tk) { return item.norm.indexOf(tk) !== -1; });
+    }).slice(0, 12);
+
+    if (!matches.length) {
+      resultsEl.innerHTML = '<li class="r-empty">Sin coincidencias</li>';
+      resultsEl.classList.add('open');
+      hlIndex = -1;
+      return;
+    }
+    resultsEl.innerHTML = matches.map(function (m) {
+      return '<li><button type="button" data-anchor="' + m.id + '">' +
+        '<span class="r-part">' + m.part + '</span>' +
+        '<span class="r-text">' + m.text.replace(/</g, '&lt;') + '</span>' +
+        '</button></li>';
+    }).join('');
+    resultsEl.classList.add('open');
+    hlIndex = -1;
+  }
+
+  input.addEventListener('input', function () { render(input.value); });
+  input.addEventListener('focus', function () { if (input.value.trim()) render(input.value); });
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); highlight(1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); highlight(-1); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      const pick = hlIndex >= 0 ? matches[hlIndex] : matches[0];
+      if (pick) goTo(pick.id);
+    } else if (e.key === 'Escape') {
+      closeResults();
+      input.blur();
+    }
+  });
+  resultsEl.addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-anchor]');
+    if (btn) goTo(btn.getAttribute('data-anchor'));
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.search-wrap')) closeResults();
+  });
+
+  // Rewrite external matriz links inside drawer / footer to in-page navigation
+  document.addEventListener('click', function(e) {
+    const a = e.target.closest('a');
+    if (!a) return;
+    const href = a.getAttribute('href') || '';
+    if (href.startsWith('Procedimiento-POS-eBoletas-CX-Chile.html')) {
+      e.preventDefault();
+      const parts = href.split('#');
+      const anchor = parts[1] || '';
+      // close drawer if open
+      const drawer = document.getElementById('drawer');
+      if (drawer && drawer.classList.contains('open')) {
+        document.getElementById('drawer-close').click();
+      }
+      showMatriz(anchor);
+    }
+  });
+
+  // btn-full in drawer uses DOC + '#' + anchor — patch openStep by intercepting btn-full clicks too
+  // Also patch when hash on load
+  const h = location.hash.replace(/^#/, '');
+  if (h && h !== 'flujo' && h !== 'matriz') {
+    // likely a procedure anchor
+    showMatriz(h);
+  } else if (h === 'matriz') {
+    showMatriz();
+  }
+})();
+</script>
+
+
+<script>
+(function () {
+  // Soft gate: internal share only. Passphrase = agendapro-cx
+  var KEY = 'ap_pos_eboletas_gate_v1';
+  var EXPECT = '8f3c2a1b'; // derived check for "agendapro-cx"
+  function dig(s) {
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    return (h >>> 0).toString(16);
+  }
+  // Precomputed: dig('agendapro-cx')
+  EXPECT = dig('agendapro-cx');
+  function unlock() {
+    document.body.classList.remove('ap-locked');
+    var g = document.getElementById('ap-gate');
+    if (g) g.hidden = true;
+  }
+  function lock() {
+    document.body.classList.add('ap-locked');
+    var g = document.getElementById('ap-gate');
+    if (g) g.hidden = false;
+  }
+  try {
+    if (sessionStorage.getItem(KEY) === '1') { unlock(); return; }
+  } catch (e) {}
+  lock();
+  var form = document.getElementById('ap-gate-form');
+  var input = document.getElementById('ap-gate-input');
+  var err = document.getElementById('ap-gate-err');
+  if (!form) return;
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = (input.value || '').trim();
+    if (dig(v) === EXPECT) {
+      try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
+      unlock();
+    } else {
+      err.textContent = 'Clave incorrecta. Pedila al equipo CX / Propay.';
+      input.select();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
