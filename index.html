@@ -502,6 +502,10 @@ a{color:#6a1b9a}
     color: var(--gris-mid);
     font-size: 0.88rem;
   }
+
+  #view-matriz h1[id], #view-matriz h2[id], #view-matriz h3[id] {
+    scroll-margin-top: 4.5rem;
+  }
   .anchor-flash { animation: flash 2.2s ease-out 1; }
   @keyframes flash {
     0% { background: #FFF0EB; box-shadow: -8px 0 0 4px #FFF0EB, 8px 0 0 4px #FFF0EB; }
@@ -712,8 +716,8 @@ a{color:#6a1b9a}
     </div>
     <div class="drawer-body" id="drawer-body"></div>
     <div class="drawer-actions">
-      <a class="btn btn-primary" id="btn-full" href="#" target="_blank" rel="noopener">
-        Abrir procedimiento completo ↗
+      <a class="btn btn-primary" id="btn-full" href="#matriz" role="button">
+        Ir al procedimiento de esta etapa →
       </a>
       <button type="button" class="btn btn-ghost" id="btn-close">Cerrar</button>
     </div>
@@ -889,7 +893,8 @@ a{color:#6a1b9a}
     phaseEl.textContent = s.phase;
     titleEl.textContent = s.title;
     bodyEl.innerHTML = s.html;
-    btnFull.href = DOC + '#' + s.anchor;
+    btnFull.dataset.anchor = s.anchor;
+    btnFull.href = '#' + s.anchor;
     document.querySelectorAll('.node').forEach(n => n.classList.toggle('active', n.dataset.id === id));
     drawer.hidden = false;
     overlay.hidden = false;
@@ -1067,16 +1072,26 @@ a{color:#6a1b9a}
     topSwitch.style.display = '';
     const hash = anchor ? ('#' + anchor) : '#matriz';
     history.replaceState(null, '', hash);
-    requestAnimationFrame(() => {
-      if (anchor) {
-        let el = document.getElementById(anchor);
-        if (!el) { try { el = document.querySelector('[id="' + anchor.replace(/"/g, '\\"') + '"]'); } catch (e) { el = null; } }
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        else window.scrollTo(0, 0);
+    function scrollToAnchor() {
+      if (!anchor) { window.scrollTo(0, 0); return; }
+      let el = document.getElementById(anchor);
+      if (!el) {
+        try { el = document.querySelector('[id="' + CSS.escape(anchor) + '"]'); } catch (e) { el = null; }
+      }
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.classList.remove('anchor-flash');
+        void el.offsetWidth;
+        el.classList.add('anchor-flash');
+        setTimeout(function () { el.classList.remove('anchor-flash'); }, 2400);
       } else {
         window.scrollTo(0, 0);
       }
+    }
+    requestAnimationFrame(function () {
+      requestAnimationFrame(scrollToAnchor);
     });
+    setTimeout(scrollToAnchor, 120);
   }
 
   tabFlujo.addEventListener('click', showFlujo);
@@ -1187,25 +1202,36 @@ a{color:#6a1b9a}
     if (!e.target.closest('.search-wrap')) closeResults();
   });
 
-  // Rewrite external matriz links inside drawer / footer to in-page navigation
+  // From flow drawer → jump to that step in the full procedure
+  const btnFullNav = document.getElementById('btn-full');
+  if (btnFullNav) {
+    btnFullNav.addEventListener('click', function (e) {
+      e.preventDefault();
+      const anchor = btnFullNav.dataset.anchor || '';
+      const drawer = document.getElementById('drawer');
+      const closeBtn = document.getElementById('drawer-close');
+      if (drawer && drawer.classList.contains('open') && closeBtn) closeBtn.click();
+      setTimeout(function () { showMatriz(anchor); }, 80);
+    });
+  }
+
+  // Footer / legacy links to the matriz HTML → in-page navigation
   document.addEventListener('click', function(e) {
     const a = e.target.closest('a');
-    if (!a) return;
+    if (!a || a.id === 'btn-full') return;
     const href = a.getAttribute('href') || '';
     if (href.startsWith('Procedimiento-POS-eBoletas-CX-Chile.html')) {
       e.preventDefault();
       const parts = href.split('#');
       const anchor = parts[1] || '';
-      // close drawer if open
       const drawer = document.getElementById('drawer');
       if (drawer && drawer.classList.contains('open')) {
         document.getElementById('drawer-close').click();
       }
-      showMatriz(anchor);
+      setTimeout(function () { showMatriz(anchor); }, 80);
     }
   });
 
-  // btn-full in drawer uses DOC + '#' + anchor — patch openStep by intercepting btn-full clicks too
   // Also patch when hash on load
   const h = location.hash.replace(/^#/, '');
   if (h && h !== 'flujo' && h !== 'matriz') {
