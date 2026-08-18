@@ -567,7 +567,7 @@ a{color:#6a1b9a}
 </div>
 
   <div class="page" id="top-switch" style="padding-bottom:0;margin-bottom:0;">
-    <span class="badge">Borrador · Propay · v2.3 · 1 solo archivo</span>
+    <span class="badge">Borrador · Propay · v2.4 · 1 solo archivo</span>
     <div class="topbar-tools">
       <div class="view-switch" role="tablist" aria-label="Vista">
         <button type="button" class="active" data-view="flujo" id="tab-flujo">Flujo interactivo</button>
@@ -584,7 +584,7 @@ a{color:#6a1b9a}
   <div id="view-flujo">
 
   <div class="page">
-    <span class="badge">Borrador · Propay · v2.3 · archivo único</span>
+    <span class="badge">Borrador · Propay · v2.4 · archivo único</span>
     <h1>Flujo 0 → configurado</h1>
     <p class="lead">POS + e-Boletas Chile · Solo Tready / SII. Haz clic en una etapa para ver el detalle y abrir el procedimiento matriz.</p>
     <p class="hint"><strong>Tip:</strong> un solo archivo. El panel resume la etapa; “Abrir procedimiento completo” salta a esa sección aquí mismo.</p>
@@ -830,6 +830,7 @@ a{color:#6a1b9a}
           <li>Split ej. 355689 · Sillón 378086 · Productos+Split = 2 reglas.</li>
           <li>Automatic Issuing = No al inicio.</li>
           <li>Columna <code>rut</code> si hay BHE (no dejar vacía).</li>
+          <li>Exclusiones por medio de pago: consulta en <strong>Tready → Company Values</strong> → <code>params.exclude_payment_methods</code>.</li>
         </ul>`
     },
     p9: {
@@ -1053,6 +1054,20 @@ a{color:#6a1b9a}
   const tabFlujo = document.getElementById('tab-flujo');
   const tabMatriz = document.getElementById('tab-matriz');
   const topSwitch = document.getElementById('top-switch');
+
+  const step9Heading = document.getElementById('paso-9-pos-si-el-caso-incluye-máquina');
+  if (step9Heading) {
+    step9Heading.insertAdjacentHTML('beforebegin', `
+      <h3 id="excluir-métodos-de-pago-de-la-emisión-de-boletas">Excluir métodos de pago de la emisión de boletas</h3>
+      <p>Úsalo cuando el comercio no quiere emitir DTE por un medio de pago específico, por ejemplo bono Fonasa/Isapre.</p>
+      <ol>
+        <li>En la cuenta, crea el método custom: <strong>Configuraciones → Sistema de caja → Métodos de pago → Agregar Método</strong>. <strong>No uses los métodos de fábrica</strong> (Efectivo, Débito, etc.); si hace falta el mismo nombre, desactiva el de fábrica y crea uno nuevo.</li>
+        <li>Configura la exclusión en <a href="https://n8n.agendapro-bizops.com/form/exclude_company_payment_methods">n8n</a>: ingresa el <code>company_id</code>, selecciona el o los métodos y envía. El flujo <strong>agrega</strong> IDs a la lista; no reemplaza los que ya estaban. <strong>No lo uses solo para consultar.</strong></li>
+        <li><strong>Consultar o verificar</strong> los ya excluidos: Back Office → <strong>Tready → Company Values</strong> → filtra por <code>company_id</code> → abre el registro → <code>params</code> → <code>exclude_payment_methods</code>. Ahí se muestran los IDs de <code>company_payment_methods</code>.</li>
+      </ol>
+      <hr/>
+    `);
+  }
 
   function showFlujo() {
     viewFlujo.classList.remove('hidden');
