@@ -601,7 +601,7 @@ a{color:#6a1b9a}
         <span class="arrow" aria-hidden="true">→</span>
         <button type="button" class="node" data-id="p1">
           <span class="num">Paso 1</span>
-          <span class="title">Coordinar reunión</span>
+          <span class="title">Coordinar + enviar guía</span>
           <span class="tap">Ver detalle →</span>
         </button>
       </div>
@@ -704,6 +704,9 @@ a{color:#6a1b9a}
     <p class="footer-link" style="border-top: none; margin-top: 0.5rem; padding-top: 0;">
       Si el cliente requiere <strong>DTEmite</strong> (más frecuente en <strong>Salud</strong>, o si no puede dejar su facturador de mercado actual — <strong>pueden coexistir</strong>), no uses este flujo e-Boletas: proceso paralelo — ver Apéndice A.
     </p>
+    <p class="footer-link" style="border-top: none; margin-top: 0.5rem; padding-top: 0;">
+      Para todo cliente que contrató boletas: <a href="https://app.notion.com/p/3c2ab34c233b81f49935ebac72256467" target="_blank" rel="noopener">guía para clientes de implementación</a>. Enviar en el Paso 1.
+    </p>
   </div>
 
   </div><!-- /view-flujo -->
@@ -741,13 +744,15 @@ a{color:#6a1b9a}
     },
     p1: {
       phase: 'Parte A',
-      title: 'Paso 1 · Coordinar reunión',
+      title: 'Paso 1 · Coordinar reunión + enviar guía',
       anchor: 'paso-1-coordinar-la-reunión-de-planificación',
       html: `
         <ul>
           <li>Dueño <strong>y</strong> quien opera caja.</li>
           <li>45–60 min si POS + boletas.</li>
           <li>Que el cliente <strong>entienda qué es cada cosa y para qué</strong> (RUT, comisiones, autorización Pablo / e-Boletas). <strong>No pedimos claves SII.</strong></li>
+          <li><strong>Si contrató boletas</strong> (POS + boletas, solo boletas o Split), envía siempre la <a href="https://app.notion.com/p/3c2ab34c233b81f49935ebac72256467" target="_blank" rel="noopener">guía para clientes de implementación</a> al dueño o responsable antes de la reunión.</li>
+          <li>Registra en la ficha Basecamp: canal, fecha y destinatario del envío.</li>
         </ul>`
     },
     p2: {
@@ -770,6 +775,7 @@ a{color:#6a1b9a}
           <li>Bloques A–F: qué compró, cómo emite hoy, Split/comisiones, productos, POS.</li>
           <li><strong>Stop:</strong> voucher = boleta + emisión AP → doble tributación.</li>
           <li>Productos + Split = <strong>dos reglas</strong>.</li>
+          <li>Meta POS: al menos <strong>70% del volumen total de ventas</strong>, sin segmentar por tarjeta.</li>
           <li>Anotar en ficha Basecamp; tareas WA al cliente.</li>
         </ul>
         <div class="stop">Sin e-Boletas viable → no configures FE aquí; escala KAM.</div>`
@@ -829,7 +835,9 @@ a{color:#6a1b9a}
           <li><strong>Clonar</strong>, no crear desde cero.</li>
           <li>Split ej. 355689 · Sillón 378086 · Productos+Split = 2 reglas.</li>
           <li>Automatic Issuing = No al inicio.</li>
-          <li>Columna <code>rut</code> si hay BHE (no dejar vacía).</li>
+          <li>Split estándar con BHE: columna <code>rut</code> para el profesional (no dejar vacía).</li>
+          <li>DTE propio de primera categoría: <strong>no basta el RUT</strong>; crea una regla específica por profesional con DTE profesional + DTE comercio, ambos de primera categoría.</li>
+          <li>Arriendo de sillón o recaudación: sugerencia de campo, no requisito de AgendaPro.</li>
           <li>Exclusiones por medio de pago: consulta en <strong>Tready → Company Values</strong> → <code>params.exclude_payment_methods</code>.</li>
         </ul>`
     },
@@ -852,7 +860,7 @@ a{color:#6a1b9a}
         <ul>
           <li>Carrito completo antes de cobrar.</li>
           <li>Cobrar desde AgendaPro (no solo pago rápido).</li>
-          <li>Meta ~70% tarjetas por POS AgendaPro.</li>
+          <li>Meta: al menos <strong>70% del volumen total de ventas</strong> con POS AgendaPro.</li>
         </ul>`
     },
     p11: {
@@ -874,7 +882,9 @@ a{color:#6a1b9a}
         <ul>
           <li>Journey 1–8 (los que apliquen).</li>
           <li>IDs de reglas, flag 166, credenciales OK.</li>
-          <li>Canal de soporte + monitoreo POS si aplica.</li>
+          <li>Confirmar correo del administrador general para reportes semanales y mensuales por estilista.</li>
+          <li>Durante el onboarding: WhatsApp del ejecutivo para acompañamiento. Durante y después: Intercom, soporte@agendapro.com y WhatsApp +56 9 3439 6978 (lun–vie 09:00–23:00; sáb 09:00–21:00).</li>
+          <li>Semana 1: implementación y borrador. Semana 2: revisión de primeras emisiones reales.</li>
         </ul>`
     }
   };
@@ -1054,6 +1064,73 @@ a{color:#6a1b9a}
   const tabFlujo = document.getElementById('tab-flujo');
   const tabMatriz = document.getElementById('tab-matriz');
   const topSwitch = document.getElementById('top-switch');
+
+  const step1Heading = document.getElementById('paso-1-coordinar-la-reunión-de-planificación');
+  if (step1Heading) {
+    step1Heading.insertAdjacentHTML('afterend', `
+      <h3 id="envio-obligatorio-guia-compromisos-boletas">Envío obligatorio de guía de compromisos (clientes con boletas)</h3>
+      <div class="stop">
+        <strong>Aplica siempre</strong> si el cliente contrató <strong>POS + boletas</strong>, <strong>solo boletas</strong> o <strong>Split</strong>. No aplica a un caso de solo POS.
+      </div>
+      <ol>
+        <li>Cuando agendes la reunión y <strong>antes de marcar la tarea 2 del journey</strong>, envía al dueño o responsable del comercio la <a href="https://app.notion.com/p/3c2ab34c233b81f49935ebac72256467" target="_blank" rel="noopener">guía para clientes de implementación POS y boletas</a>.</li>
+        <li>Usa WhatsApp o correo y registra en la ficha Basecamp el canal, fecha y destinatario. Si no hay un contacto válido, resuélvelo antes de cerrar este paso.</li>
+        <li><strong>Mensaje sugerido:</strong> “Te comparto la guía de compromisos para implementar POS y emisión de boletas con AgendaPro. Revísala antes de nuestra reunión; detalla qué configuraremos y qué necesitaremos de ustedes.”</li>
+      </ol>
+      <hr/>
+    `);
+  }
+
+  const posTargetCell = Array.prototype.slice.call(viewMatriz.querySelectorAll('td')).find(function (cell) {
+    return cell.textContent.includes('mayoría de cobros con tarjeta');
+  });
+  if (posTargetCell) {
+    posTargetCell.innerHTML = '“¿Pueden comprometer que al menos el <strong>70% del volumen total de ventas</strong> se registre con el POS AgendaPro?”';
+  }
+
+  const posTrainingTarget = Array.prototype.slice.call(viewMatriz.querySelectorAll('li')).find(function (item) {
+    return item.textContent.includes('Meta: mayoría de tarjetas por POS AgendaPro');
+  });
+  if (posTrainingTarget) {
+    posTrainingTarget.innerHTML = 'Meta: al menos <strong>70% del volumen total de ventas</strong> registrado con el POS AgendaPro.';
+  }
+
+  const rentalAgreement = Array.prototype.slice.call(viewMatriz.querySelectorAll('p')).find(function (paragraph) {
+    return paragraph.textContent.includes('Contrato sillón vs configuración Split:');
+  });
+  if (rentalAgreement) {
+    rentalAgreement.innerHTML = '<strong>Sugerencia de campo — Split, arriendo de sillón o recaudación:</strong> AgendaPro ha visto que algunos comercios formalizan su acuerdo comercial y la forma de facturar o recaudar con sus profesionales. Es una <strong>sugerencia basada en esa experiencia</strong>, no un requisito de AgendaPro ni asesoría legal o tributaria. Cada comercio decide si aplica a su caso y lo revisa con su asesor.';
+  }
+
+  const professionalSplitLabel = Array.prototype.slice.call(viewMatriz.querySelectorAll('strong')).find(function (label) {
+    return label.textContent.includes('Si un profesional NO quiere BHE');
+  });
+  if (professionalSplitLabel && professionalSplitLabel.parentElement) {
+    const splitParagraph = professionalSplitLabel.parentElement;
+    const splitDetails = splitParagraph.nextElementSibling;
+    splitParagraph.innerHTML = '<strong>Nuevos profesionales en Split — define el tipo de DTE antes de operar:</strong>';
+    if (splitDetails && splitDetails.tagName === 'UL') {
+      splitDetails.innerHTML = `
+        <li><strong>Split estándar con BHE:</strong> el cliente carga el RUT del profesional en la columna <code>rut</code>; se emite BHE profesional + boleta comercio.</li>
+        <li><strong>DTE propio de primera categoría:</strong> no basta con cargar el RUT. Back Office debe crear una regla Tready específica por profesional, con DTE profesional + DTE comercio, <strong>ambos de primera categoría</strong>.</li>
+        <li>Mantén <strong>Automatic Issuing = No</strong> hasta validar en borrador los tipos de DTE, RUT y montos de ambas emisiones.</li>
+        <li>Sin BHE, DTE propio o inicio de actividades: revisar excepción de 100% boleta empresa antes de operar.</li>
+      `;
+    }
+  }
+
+  const step12Heading = document.getElementById('paso-12-cierre-del-caso');
+  if (step12Heading) {
+    step12Heading.insertAdjacentHTML('beforebegin', `
+      <h3 id="reportes-seguimiento-administrador-general">Reportes de seguimiento</h3>
+      <p>AgendaPro envía al correo del <strong>administrador general de la cuenta</strong> reportes <strong>semanales y mensuales</strong> de producción, boletas, transacciones y propinas, desagregados por estilista. Confirma ese correo antes del cierre.</p>
+      <h3 id="canales-acompanamiento-y-soporte">Canales de acompañamiento y soporte</h3>
+      <p>Durante el onboarding, el WhatsApp del ejecutivo acompaña la implementación. En paralelo —y también después del onboarding— Soporte AgendaPro está disponible por la burbuja de <strong>Intercom</strong> dentro de AgendaPro, <a href="mailto:soporte@agendapro.com">soporte@agendapro.com</a> y WhatsApp <a href="https://wa.me/56934396978">+56 9 3439 6978</a>: lunes a viernes 09:00–23:00 y sábados 09:00–21:00.</p>
+      <h3 id="plazos-esperados-implementacion">Plazos esperados</h3>
+      <p>En condiciones normales, la implementación se completa en la <strong>semana 1</strong>: planificación, permisos, configuración, capacitación y emisión en borrador. En la <strong>semana 2</strong> se revisan las primeras emisiones reales y se ajusta la configuración si corresponde.</p>
+      <hr/>
+    `);
+  }
 
   const step9Heading = document.getElementById('paso-9-pos-si-el-caso-incluye-máquina');
   if (step9Heading) {
