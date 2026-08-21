@@ -835,7 +835,8 @@ a{color:#6a1b9a}
           <li><strong>Clonar</strong>, no crear desde cero.</li>
           <li>Split ej. 355689 · Sillón 378086 · Productos+Split = 2 reglas.</li>
           <li>Automatic Issuing = No al inicio.</li>
-          <li>Split estándar con BHE: columna <code>rut</code> para el profesional (no dejar vacía).</li>
+          <li><strong>Cada vez que ingrese un profesional nuevo:</strong> define su tipo de emisión antes de su primera venta; este paso se repite en cada nueva incorporación.</li>
+          <li>Split estándar con BHE: agrega su RUT en <strong>Administración → Facturación → Profesionales → columna <code>rut</code></strong> (no dejar vacía).</li>
           <li>DTE propio de primera categoría: <strong>no basta el RUT</strong>; crea una regla específica por profesional con DTE profesional + DTE comercio, ambos de primera categoría.</li>
           <li>Arriendo de sillón o recaudación: sugerencia de campo, no requisito de AgendaPro.</li>
           <li>Exclusiones por medio de pago: consulta en <strong>Tready → Company Values</strong> → <code>params.exclude_payment_methods</code>.</li>
@@ -1111,7 +1112,8 @@ a{color:#6a1b9a}
     splitParagraph.innerHTML = '<strong>Nuevos profesionales en Split — define el tipo de DTE antes de operar:</strong>';
     if (splitDetails && splitDetails.tagName === 'UL') {
       splitDetails.innerHTML = `
-        <li><strong>Split estándar con BHE:</strong> el cliente carga el RUT del profesional en la columna <code>rut</code>; se emite BHE profesional + boleta comercio.</li>
+        <li><strong>Cada vez que ingresa un profesional nuevo:</strong> antes de su primera venta, identifica su tipo de emisión. Este paso debe repetirse con cada nueva incorporación.</li>
+        <li><strong>Split estándar con BHE:</strong> el cliente agrega el RUT en <strong>Administración → Facturación → Profesionales → columna <code>rut</code></strong>; se emite BHE profesional + boleta comercio.</li>
         <li><strong>DTE propio de primera categoría:</strong> no basta con cargar el RUT. Back Office debe crear una regla Tready específica por profesional, con DTE profesional + DTE comercio, <strong>ambos de primera categoría</strong>.</li>
         <li>Mantén <strong>Automatic Issuing = No</strong> hasta validar en borrador los tipos de DTE, RUT y montos de ambas emisiones.</li>
         <li>Sin BHE, DTE propio o inicio de actividades: revisar excepción de 100% boleta empresa antes de operar.</li>
